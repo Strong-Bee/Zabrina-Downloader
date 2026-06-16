@@ -84,8 +84,6 @@ git clone https://github.com/yourusername/zabrina-downloader.git
 cd zabrina-downloader
 ```
 
-````
-
 2. **Install dependencies**
 
 ```bash
@@ -251,4 +249,3 @@ Proyek ini dilisensikan di bawah Lisensi MIT - lihat file [LICENSE](LICENSE) unt
 
 </div>
 ```
-````
