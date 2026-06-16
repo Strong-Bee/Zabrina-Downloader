@@ -47,12 +47,12 @@
 
 ## 📱 Platform yang Didukung
 
-| Platform                                                                                                     | Status | Fitur                      |
-| ------------------------------------------------------------------------------------------------------------ | ------ | -------------------------- |
-| ![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=flat-square&logo=youtube&logoColor=white)       | ✅     | Video HD, Audio MP3        |
-| ![TikTok](https://img.shields.io/badge/TikTok-000000?style=flat-square&logo=tiktok&logoColor=white)          | ✅     | Tanpa Watermark, Audio MP3 |
-| ![Instagram](https://img.shields.io/badge/Instagram-E4405F?style=flat-square&logo=instagram&logoColor=white) | ✅     | Video, Foto, Reels         |
-| ![Facebook](https://img.shields.io/badge/Facebook-1877F2?style=flat-square&logo=facebook&logoColor=white)    | ✅     | Video HD & SD              |
+| Platform  | Status | Fitur                      |
+| --------- | ------ | -------------------------- |
+| YouTube   | ✅     | Video HD, Audio MP3        |
+| TikTok    | ✅     | Tanpa Watermark, Audio MP3 |
+| Instagram | ✅     | Video, Foto, Reels         |
+| Facebook  | ✅     | Video HD & SD              |
 
 ---
 
@@ -122,10 +122,12 @@ Buka [http://localhost:3000](http://localhost:3000) untuk melihat hasilnya.
 
 ### Contoh URL
 
-- **YouTube**: `https://youtube.com/watch?v=xxxxxxxxxxx`
-- **TikTok**: `https://www.tiktok.com/@username/video/1234567890`
-- **Instagram**: `https://www.instagram.com/p/xxxxxxxxxx/`
-- **Facebook**: `https://www.facebook.com/watch/?v=1234567890`
+| Platform  | Contoh URL                                          |
+| --------- | --------------------------------------------------- |
+| YouTube   | `https://youtube.com/watch?v=xxxxxxxxxxx`           |
+| TikTok    | `https://www.tiktok.com/@username/video/1234567890` |
+| Instagram | `https://www.instagram.com/p/xxxxxxxxxx/`           |
+| Facebook  | `https://www.facebook.com/watch/?v=1234567890`      |
 
 ---
 
@@ -248,6 +250,5 @@ Proyek ini dilisensikan di bawah Lisensi MIT - lihat file [LICENSE](LICENSE) unt
 **Dibuat dengan ❤️ oleh [Zabrina Team](https://github.com/yourusername)**
 
 </div>
+```
 ````
-#   Z a b r i n a - D o w n l o a d e r  
- 
