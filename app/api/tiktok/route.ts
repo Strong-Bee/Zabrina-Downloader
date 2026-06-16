@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { tiktokdl } from '@mrnima/tiktok-downloader';
+import { createRequire } from 'module';
+
+// Trik bypass Turbopack: Memuat library menggunakan createRequire Node.js
+const require = createRequire(import.meta.url);
+const { tiktokdl } = require('@mrnima/tiktok-downloader');
 
 export async function POST(request: NextRequest) {
   try {
