@@ -7,7 +7,7 @@ Aplikasi Next.js untuk mengambil metadata dari URL publik yang didukung dan mena
 | Platform | Status API | Catatan |
 | --- | --- | --- |
 | YouTube | Metadata tersedia via oEmbed | Durasi, views, likes, dan unduhan belum disediakan oleh oEmbed. |
-| TikTok | Eksperimental | Menggunakan `@mrnima/tiktok-downloader`; hanya URL publik yang didukung library. |
+| TikTok | Metadata tersedia via TikTok oEmbed | Hanya metadata dasar dan thumbnail video publik; unduhan media mengembalikan HTTP 501 sampai adapter stabil tersedia. |
 | Instagram | Belum tersedia | Endpoint mengembalikan HTTP 501 sampai adapter resmi/tepercaya dikonfigurasi. |
 | Facebook | Belum tersedia | Endpoint mengembalikan HTTP 501 sampai adapter resmi/tepercaya dikonfigurasi. |
 
@@ -80,8 +80,8 @@ npm run build
 | --- | --- |
 | `/api/youtube` | Mengambil metadata publik via YouTube oEmbed |
 | `/api/youtube/download` | Menyiapkan format unduhan YouTube (masih eksperimental) |
-| `/api/tiktok` | Mengambil metadata TikTok |
-| `/api/tiktok/download` | Menyiapkan tautan unduhan TikTok |
+| `/api/tiktok` | Mengambil metadata dasar dan thumbnail publik via TikTok oEmbed |
+| `/api/tiktok/download` | Mengembalikan HTTP 501 secara eksplisit; tautan unduhan tidak dibuat-buat |
 | `/api/instagram` | Mengembalikan 501 sampai adapter tersedia |
 | `/api/instagram/download` | Mengembalikan 501 sampai adapter tersedia |
 | `/api/facebook` | Mengembalikan 501 sampai adapter tersedia |
@@ -91,7 +91,7 @@ Setiap endpoint memvalidasi host URL terhadap platform yang sesuai. URL ke host 
 
 ## Catatan operasional
 
-- Jalankan aplikasi di lingkungan Node.js; route downloader menggunakan dependensi Node.
+- Jalankan aplikasi di lingkungan Node.js. Metadata TikTok menggunakan endpoint oEmbed resmi; unduhan media TikTok belum diaktifkan.
 - Pasang rate limiting di reverse proxy atau platform hosting sebelum membuka API ke publik.
 - Jangan menambahkan cookie, token akun, atau kredensial platform ke repository.
 - Downloader pihak ketiga dapat berhenti bekerja ketika platform sumber mengubah API atau mekanisme aksesnya.
