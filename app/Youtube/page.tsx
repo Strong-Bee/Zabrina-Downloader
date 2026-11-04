@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { readApiResponse } from "@/lib/client-api";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -68,7 +69,7 @@ export default function YoutubePage() {
         body: JSON.stringify({ url }),
       });
 
-      const data = await response.json();
+      const data = await readApiResponse(response);
 
       if (!response.ok) {
         throw new Error(data.error || `HTTP error! status: ${response.status}`);
@@ -106,45 +107,24 @@ export default function YoutubePage() {
 
   const handleDownload = async (quality: string, label: string) => {
     if (!videoInfo) return;
-
     setDownloading(quality);
-
     try {
       const response = await fetch("/api/youtube/download", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: url,
-          quality: quality,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, quality }),
       });
-
-      const data = await response.json();
-
-      if (response.ok && data.downloadUrl) {
-        // Buka link download di tab baru
-        window.open(data.downloadUrl, "_blank");
-      } else {
-        alert(data.error || `Gagal menyiapkan unduhan ${label}. Silakan coba lagi.`);
+      const data = await readApiResponse(response);
+      if (!response.ok || !data.downloadUrl) {
+        throw new Error(data.error || `Unduhan ${label} tidak tersedia.`);
       }
+      window.location.assign(data.downloadUrl);
     } catch (err) {
-      console.error("Download error:", err);
-      alert(`⚠️ Gagal mendownload ${label}. Silakan coba lagi.`);
+      setError(err instanceof Error ? err.message : "Gagal menyiapkan unduhan YouTube.");
     } finally {
       setDownloading(null);
     }
   };
-
-  const canPrepareDownload = videoInfo?.metadataSource !== "oembed";
-
-  const qualityOptions = [
-    { label: "1080p (HD)", size: "45 MB", quality: "hd" },
-    { label: "720p (HD)", size: "25 MB", quality: "sd" },
-    { label: "480p (SD)", size: "15 MB", quality: "low" },
-    { label: "Audio MP3", size: "5 MB", quality: "audio", icon: FaMusic },
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -166,8 +146,7 @@ export default function YoutubePage() {
               </span>
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Download video dan audio dari YouTube dengan kualitas terbaik.
-              Support 1080p, 720p, dan MP3.
+              Ambil informasi dan siapkan tautan media publik dalam kualitas yang tersedia.
             </p>
           </div>
 
@@ -296,7 +275,7 @@ export default function YoutubePage() {
                           onClick={() =>
                             handleDownload(quality.quality, quality.label)
                           }
-                          disabled={downloading === quality.quality || !canPrepareDownload}
+                          disabled={downloading === quality.quality}
                           className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {downloading === quality.quality ? (
