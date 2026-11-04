@@ -112,8 +112,7 @@ export default function InstagramPage() {
               <span className="text-gray-800 dark:text-white"> Content</span>
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Ambil informasi dan unduh media publik Instagram yang tersedia. Dengan
-              cepat.
+              Ambil informasi dan unduh media Instagram publik yang didukung layanan.
             </p>
           </div>
 
@@ -243,11 +242,11 @@ export default function InstagramPage() {
                     <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                       <span className="flex items-center gap-1">
                         <FaHeart className="w-4 h-4 text-pink-500" />
-                        {mediaInfo.likes?.toLocaleString() || "0"} likes
+                        {mediaInfo.likes == null ? "N/A" : mediaInfo.likes.toLocaleString()} likes
                       </span>
                       <span className="flex items-center gap-1">
                         <FaComment className="w-4 h-4 text-blue-500" />
-                        {mediaInfo.comments?.toLocaleString() || "0"} comments
+                        {mediaInfo.comments == null ? "N/A" : mediaInfo.comments.toLocaleString()} comments
                       </span>
                     </div>
                   </div>
