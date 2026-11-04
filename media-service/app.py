@@ -40,8 +40,13 @@ def validate_media_url(platform: str, raw_url: str) -> str:
     if platform not in PLATFORM_HOSTS:
         raise HTTPException(status_code=400, detail="Platform tidak didukung.")
 
-    parsed = urlparse(raw_url.strip())
-    if parsed.scheme != "https" or parsed.username or parsed.password or parsed.port:
+    try:
+        parsed = urlparse(raw_url.strip())
+        port = parsed.port
+    except ValueError:
+        raise HTTPException(status_code=400, detail="URL harus menggunakan HTTPS yang valid.")
+
+    if parsed.scheme != "https" or parsed.username or parsed.password or port is not None:
         raise HTTPException(status_code=400, detail="URL harus menggunakan HTTPS yang valid.")
 
     host = (parsed.hostname or "").lower()
