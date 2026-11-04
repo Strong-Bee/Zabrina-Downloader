@@ -15,12 +15,23 @@ import {
 } from "react-icons/fa";
 import { FiClock, FiLoader, FiEye } from "react-icons/fi";
 
+type VideoInfo = {
+  title?: string;
+  description?: string;
+  thumbnail?: string;
+  duration?: string | number;
+  views?: number;
+  likes?: number;
+  comments?: number;
+  downloadLinks?: Record<string, string | null | undefined>;
+};
+
 export default function FacebookPage() {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [videoInfo, setVideoInfo] = useState<any>(null);
+  const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [error, setError] = useState("");
-  const [downloading, setDownloading] = useState(null);
+  const [downloading, setDownloading] = useState<string | null>(null);
 
   const handleFetchVideo = async () => {
     if (!url) {
