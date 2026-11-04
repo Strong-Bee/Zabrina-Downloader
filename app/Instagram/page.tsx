@@ -53,7 +53,7 @@ export default function InstagramPage() {
         body: JSON.stringify({ url }),
       });
 
-      const data = await readApiResponse(response);
+      const data = await readApiResponse<MediaInfo>(response);
 
       if (!response.ok) {
         throw new Error(data.error || "Gagal mendapatkan media");
@@ -81,7 +81,7 @@ export default function InstagramPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url, quality: "hd" }),
       });
-      const data = await readApiResponse(response);
+      const data = await readApiResponse<MediaInfo>(response);
       if (!response.ok || !data.downloadUrl) {
         throw new Error(data.error || "Unduhan Instagram tidak tersedia.");
       }
