@@ -79,7 +79,7 @@ npm run build
 | Endpoint | Fungsi |
 | --- | --- |
 | `/api/youtube` | Mengambil metadata publik via YouTube oEmbed |
-| `/api/youtube/download` | Menyiapkan format unduhan YouTube (masih eksperimental) |
+| `/api/youtube/download` | Mengembalikan HTTP 501 dengan penjelasan dan tautan ekspor resmi; tidak membuat tautan media palsu |
 | `/api/tiktok` | Mengambil metadata TikTok |
 | `/api/tiktok/download` | Menyiapkan tautan unduhan TikTok |
 | `/api/instagram` | Mengembalikan 501 sampai adapter tersedia |
