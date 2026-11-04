@@ -252,9 +252,9 @@ export default function Home() {
                   </div>
                 </div>
                 <p className="text-gray-600 dark:text-gray-300 text-left italic">
-                  "Zabrina Downloader sangat membantu saya untuk mengunduh video
+                  &quot;Zabrina Downloader sangat membantu saya untuk mengunduh video
                   pembelajaran dari YouTube. Kualitasnya jernih dan prosesnya
-                  cepat. Recommended!"
+                  cepat. Recommended!&quot;
                 </p>
                 <div className="flex text-yellow-400 mt-2">
                   {[...Array(5)].map((_, i) => (
