@@ -18,7 +18,7 @@ import { FiClock, FiLoader, FiEye } from "react-icons/fi";
 export default function InstagramPage() {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [mediaInfo, setMediaInfo] = useState(null);
+  const [mediaInfo, setMediaInfo] = useState<any>(null);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState(false);
 
@@ -53,7 +53,7 @@ export default function InstagramPage() {
         throw new Error("Data media tidak ditemukan");
       }
     } catch (err) {
-      setError(err.message || "Terjadi kesalahan saat memproses media");
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan saat memproses media");
       console.error("Error:", err);
     } finally {
       setIsLoading(false);
@@ -194,7 +194,7 @@ export default function InstagramPage() {
                     alt="Instagram media"
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.target.src = "https://via.placeholder.com/600x600";
+                      e.currentTarget.src = "https://via.placeholder.com/600x600";
                     }}
                   />
                   {mediaInfo.type === "video" && (
@@ -232,7 +232,7 @@ export default function InstagramPage() {
                           alt={mediaInfo.author.username}
                           className="w-10 h-10 rounded-full object-cover"
                           onError={(e) => {
-                            e.target.src = "https://via.placeholder.com/40";
+                            e.currentTarget.src = "https://via.placeholder.com/40";
                           }}
                         />
                         <div>
