@@ -6,6 +6,7 @@ type ServiceResult = {
   downloadUrl?: string;
   error?: string;
   code?: string;
+  detail?: unknown;
 };
 
 type ServiceCall = {
@@ -97,7 +98,10 @@ export async function callMediaService(
         body: {
           ...body,
           success: false,
-          error: body.error || "Layanan media gagal memproses URL ini.",
+          error:
+            body.error ||
+            (typeof body.detail === "string" ? body.detail : null) ||
+            "Layanan media gagal memproses URL ini.",
         },
       };
     }
