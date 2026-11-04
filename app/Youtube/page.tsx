@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { readApiResponse } from "@/lib/client-api";
+import { validatePlatformUrl } from "@/lib/platform-url";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -20,7 +22,7 @@ type VideoInfo = {
   views?: number | null;
   likes?: number | null;
   channelName?: string;
-  metadataSource?: "ytdl" | "oembed";
+  metadataSource?: "yt-dlp" | "ytdl" | "oembed";
   description?: string;
   downloadLinks?: Record<string, string | null | undefined>;
 };
@@ -31,17 +33,7 @@ export default function YoutubePage() {
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState<string | null>(null);
-  // Validasi URL YouTube (Ditambahkan dukungan untuk YouTube Shorts)
-  const validateYoutubeUrl = (url: string) => {
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=)([\w-]+)/,
-      /(?:youtu\.be\/)([\w-]+)/,
-      /(?:youtube\.com\/embed\/)([\w-]+)/,
-      /(?:youtube\.com\/v\/)([\w-]+)/,
-      /(?:youtube\.com\/shorts\/)([\w-]+)/, // Tambahan: support YouTube Shorts
-    ];
-    return patterns.some((pattern) => pattern.test(url));
-  };
+
 
   const handleFetchVideo = async () => {
     if (!url) {
@@ -50,7 +42,7 @@ export default function YoutubePage() {
     }
 
     // Validasi URL
-    if (!validateYoutubeUrl(url)) {
+    if (!validatePlatformUrl(url, "youtube")) {
       setError("URL YouTube tidak valid. Pastikan URL benar.");
       return;
     }
@@ -68,7 +60,7 @@ export default function YoutubePage() {
         body: JSON.stringify({ url }),
       });
 
-      const data = await response.json();
+      const data = await readApiResponse<VideoInfo>(response);
 
       if (!response.ok) {
         throw new Error(data.error || `HTTP error! status: ${response.status}`);
@@ -106,44 +98,30 @@ export default function YoutubePage() {
 
   const handleDownload = async (quality: string, label: string) => {
     if (!videoInfo) return;
-
     setDownloading(quality);
-
     try {
       const response = await fetch("/api/youtube/download", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: url,
-          quality: quality,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, quality }),
       });
-
-      const data = await response.json();
-
-      if (response.ok && data.downloadUrl) {
-        // Buka link download di tab baru
-        window.open(data.downloadUrl, "_blank");
-      } else {
-        alert(data.error || `Gagal menyiapkan unduhan ${label}. Silakan coba lagi.`);
+      const data = await readApiResponse<VideoInfo>(response);
+      if (!response.ok || !data.downloadUrl) {
+        throw new Error(data.error || `Unduhan ${label} tidak tersedia.`);
       }
+      window.location.assign(data.downloadUrl);
     } catch (err) {
-      console.error("Download error:", err);
-      alert(`⚠️ Gagal mendownload ${label}. Silakan coba lagi.`);
+      setError(err instanceof Error ? err.message : "Gagal menyiapkan unduhan YouTube.");
     } finally {
       setDownloading(null);
     }
   };
 
-  const canPrepareDownload = videoInfo?.metadataSource !== "oembed";
-
   const qualityOptions = [
-    { label: "1080p (HD)", size: "45 MB", quality: "hd" },
-    { label: "720p (HD)", size: "25 MB", quality: "sd" },
-    { label: "480p (SD)", size: "15 MB", quality: "low" },
-    { label: "Audio MP3", size: "5 MB", quality: "audio", icon: FaMusic },
+    { label: "1080p (HD)", quality: "hd" },
+    { label: "720p (HD)", quality: "sd" },
+    { label: "480p (SD)", quality: "low" },
+    { label: "Audio (format asli)", quality: "audio", icon: FaMusic },
   ];
 
   return (
@@ -166,8 +144,7 @@ export default function YoutubePage() {
               </span>
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Download video dan audio dari YouTube dengan kualitas terbaik.
-              Support 1080p, 720p, dan MP3.
+              Ambil informasi dan siapkan tautan media publik dalam kualitas yang tersedia.
             </p>
           </div>
 
@@ -224,11 +201,11 @@ export default function YoutubePage() {
               </span>
               <span className="flex items-center gap-1">
                 <FaCheckCircle className="w-4 h-4 text-green-500" />
-                Tanpa watermark
+                Format media
               </span>
               <span className="flex items-center gap-1">
                 <FaMusic className="w-4 h-4 text-purple-500" />
-                Ekstrak audio MP3
+                Audio (format asli)
               </span>
             </div>
           </div>
@@ -296,7 +273,7 @@ export default function YoutubePage() {
                           onClick={() =>
                             handleDownload(quality.quality, quality.label)
                           }
-                          disabled={downloading === quality.quality || !canPrepareDownload}
+                          disabled={downloading === quality.quality}
                           className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {downloading === quality.quality ? (
@@ -314,11 +291,6 @@ export default function YoutubePage() {
                         </button>
                       ))}
                     </div>
-                    {videoInfo.metadataSource === "oembed" && (
-                      <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">
-                        Metadata dasar berhasil dimuat, tetapi sumber cadangan tidak menyediakan tautan media. Tombol unduhan dinonaktifkan agar tidak menampilkan proses unduhan palsu. Untuk video milik Anda, gunakan file asli atau ekspor melalui YouTube Studio/Google Takeout.
-                      </p>
-                    )}
                   </div>
                 </div>
               </div>
@@ -332,10 +304,10 @@ export default function YoutubePage() {
                 <FaVideo className="w-6 h-6 text-red-600" />
               </div>
               <h3 className="font-semibold text-gray-800 dark:text-white mb-2">
-                HD Quality
+                Kualitas tersedia
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Download video YouTube dalam kualitas 1080p, 720p, dan 480p.
+                Pilih kualitas video sesuai format yang tersedia.
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition">
@@ -343,10 +315,10 @@ export default function YoutubePage() {
                 <FaMusic className="w-6 h-6 text-purple-600" />
               </div>
               <h3 className="font-semibold text-gray-800 dark:text-white mb-2">
-                Audio MP3
+                Audio (format asli)
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Ekstrak audio dari video YouTube dan download dalam format MP3.
+                Unduh audio dalam format sumber yang tersedia.
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition">
@@ -357,7 +329,7 @@ export default function YoutubePage() {
                 Tanpa Watermark
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Download video tanpa watermark atau logo apapun. Hasil bersih.
+                Tautan media diproses dari video publik yang didukung.
               </p>
             </div>
           </div>
@@ -374,7 +346,7 @@ export default function YoutubePage() {
               </li>
               <li>• Pilih kualitas sesuai kebutuhan untuk menghemat kuota</li>
               <li>
-                • Gunakan fitur audio MP3 untuk mendengarkan musik offline
+                • Audio mengikuti format yang tersedia dari sumber
               </li>
               <li>• Video dengan hak cipta mungkin tidak bisa di download</li>
             </ul>

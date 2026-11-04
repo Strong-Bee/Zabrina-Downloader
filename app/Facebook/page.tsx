@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { readApiResponse } from "@/lib/client-api";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -19,10 +20,10 @@ type VideoInfo = {
   title?: string;
   description?: string;
   thumbnail?: string;
-  duration?: string | number;
-  views?: number;
-  likes?: number;
-  comments?: number;
+  duration?: string | number | null;
+  views?: number | null;
+  likes?: number | null;
+  comments?: number | null;
   downloadLinks?: Record<string, string | null | undefined>;
 };
 
@@ -52,7 +53,7 @@ export default function FacebookPage() {
         body: JSON.stringify({ url }),
       });
 
-      const data = await response.json();
+      const data = await readApiResponse<VideoInfo>(response);
 
       if (!response.ok) {
         throw new Error(data.error || "Gagal mendapatkan video");
@@ -73,36 +74,20 @@ export default function FacebookPage() {
 
   const handleDownload = async (quality: string, label: string) => {
     if (!videoInfo) return;
-
     setDownloading(quality);
-
     try {
       const response = await fetch("/api/facebook/download", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: url,
-          quality: quality,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, quality }),
       });
-
-      const data = await response.json();
-
-      if (response.ok && data.downloadUrl) {
-        window.open(data.downloadUrl, "_blank");
-      } else {
-        const downloadUrl = videoInfo.downloadLinks?.[quality];
-        if (downloadUrl) {
-          window.open(downloadUrl, "_blank");
-        } else {
-          alert(`Download ${label} - ${videoInfo.title}`);
-        }
+      const data = await readApiResponse<VideoInfo>(response);
+      if (!response.ok || !data.downloadUrl) {
+        throw new Error(data.error || `Unduhan ${label} tidak tersedia.`);
       }
+      window.location.assign(data.downloadUrl);
     } catch (err) {
-      console.error("Download error:", err);
-      alert(`Download ${label} - ${videoInfo.title}`);
+      setError(err instanceof Error ? err.message : "Gagal menyiapkan unduhan Facebook.");
     } finally {
       setDownloading(null);
     }
@@ -126,8 +111,8 @@ export default function FacebookPage() {
               <span className="text-blue-600"> Video</span>
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Download video dari Facebook dengan kualitas HD. Support video
-              public dan private.
+              Ambil informasi dan unduh video Facebook publik dengan format yang tersedia.
+              publik.
             </p>
           </div>
 
@@ -210,7 +195,7 @@ export default function FacebookPage() {
                     </div>
                   </div>
                   <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                    {videoInfo.duration || "0:00"}
+                    {videoInfo.duration == null ? "Durasi tidak tersedia" : videoInfo.duration}
                   </div>
                 </div>
                 <div className="p-6 flex flex-col justify-between">
@@ -223,15 +208,15 @@ export default function FacebookPage() {
                     <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                       <span className="flex items-center gap-1">
                         <FiEye className="w-4 h-4" />
-                        {videoInfo.views?.toLocaleString() || "0"} views
+                        {videoInfo.views == null ? "N/A" : videoInfo.views.toLocaleString()} views
                       </span>
                       <span className="flex items-center gap-1">
                         <FaHeart className="w-4 h-4 text-red-500" />
-                        {videoInfo.likes?.toLocaleString() || "0"} likes
+                        {videoInfo.likes == null ? "N/A" : videoInfo.likes.toLocaleString()} likes
                       </span>
                       <span className="flex items-center gap-1">
                         <FaComment className="w-4 h-4 text-blue-500" />
-                        {videoInfo.comments?.toLocaleString() || "0"} comments
+                        {videoInfo.comments == null ? "N/A" : videoInfo.comments.toLocaleString()} comments
                       </span>
                     </div>
                   </div>
@@ -283,10 +268,10 @@ export default function FacebookPage() {
                 <FaVideo className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="font-semibold text-gray-800 dark:text-white mb-2">
-                HD Quality
+                Kualitas tersedia
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Download video Facebook dalam kualitas HD 1080p dan 720p.
+                Unduh video Facebook publik dalam kualitas yang tersedia.
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
@@ -294,10 +279,10 @@ export default function FacebookPage() {
                 <FaCheckCircle className="w-6 h-6 text-indigo-600" />
               </div>
               <h3 className="font-semibold text-gray-800 dark:text-white mb-2">
-                Tanpa Watermark
+                Format Media
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Download video tanpa watermark atau logo apapun.
+                Unduh file media yang disediakan sumber.
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
@@ -305,10 +290,10 @@ export default function FacebookPage() {
                 <FaShare className="w-6 h-6 text-purple-600" />
               </div>
               <h3 className="font-semibold text-gray-800 dark:text-white mb-2">
-                Support Semua
+                Konten Publik
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Support video Facebook, live streaming, dan video dari group.
+                Mendukung tautan video publik yang dapat diproses oleh layanan media.
               </p>
             </div>
           </div>
@@ -322,7 +307,7 @@ export default function FacebookPage() {
               <li>• Salin URL dari video Facebook yang ingin di download</li>
               <li>• Support video dari postingan, group, dan halaman</li>
               <li>• Pilih kualitas HD untuk hasil terbaik</li>
-              <li>• Video live streaming juga dapat didownload</li>
+              <li>• Hanya video publik yang didukung oleh extractor yang dapat diproses</li>
             </ul>
           </div>
         </div>

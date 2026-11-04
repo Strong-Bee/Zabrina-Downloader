@@ -1,41 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
+import { readPlatformUrl } from "@/lib/platform-url";
+import { callMediaService } from "@/lib/media-service";
 
-export async function POST(request: NextRequest) {
-  try {
-    const { url } = await request.json();
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
-    if (!url) {
-      return NextResponse.json(
-        { error: 'URL tidak ditemukan' },
-        { status: 400 }
-      );
-    }
-
-    // Simulasi response untuk Facebook
-    const mockData = {
-      title: 'Facebook Video',
-      description: 'Video dari Facebook',
-      thumbnail: 'https://picsum.photos/640/360',
-      duration: '2:15',
-      views: 350000,
-      likes: 12000,
-      comments: 800,
-      downloadLinks: {
-        hd: '#',
-        sd: '#',
-      },
-    };
-
-    return NextResponse.json({
-      success: true,
-      data: mockData,
-    });
-
-  } catch (error) {
-    console.error('Facebook API Error:', error);
+export async function POST(request: Request) {
+  const input = await readPlatformUrl(request, "facebook");
+  if ("error" in input) {
     return NextResponse.json(
-      { error: 'Terjadi kesalahan pada server' },
-      { status: 500 }
+      { success: false, error: input.error, code: "INVALID_URL" },
+      { status: 400 },
     );
   }
+
+  const result = await callMediaService("metadata", {
+    platform: "facebook",
+    url: input.url,
+  });
+  return NextResponse.json(result.body, { status: result.status });
 }

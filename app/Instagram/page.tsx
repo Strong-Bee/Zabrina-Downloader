@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { readApiResponse } from "@/lib/client-api";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -19,9 +20,9 @@ type MediaInfo = {
   title?: string;
   thumbnail?: string;
   type?: string;
-  duration?: string | number;
-  likes?: number;
-  comments?: number;
+  duration?: string | number | null;
+  likes?: number | null;
+  comments?: number | null;
   author?: { username?: string; fullName?: string; avatar?: string };
   downloadLinks?: Record<string, string | null | undefined>;
 };
@@ -52,7 +53,7 @@ export default function InstagramPage() {
         body: JSON.stringify({ url }),
       });
 
-      const data = await response.json();
+      const data = await readApiResponse<MediaInfo>(response);
 
       if (!response.ok) {
         throw new Error(data.error || "Gagal mendapatkan media");
@@ -73,39 +74,20 @@ export default function InstagramPage() {
 
   const handleDownload = async () => {
     if (!mediaInfo) return;
-
     setDownloading(true);
-
     try {
       const response = await fetch("/api/instagram/download", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ url: url }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, quality: "hd" }),
       });
-
-      const data = await response.json();
-
-      if (response.ok && data.downloadUrl) {
-        window.open(data.downloadUrl, "_blank");
-      } else {
-        // Fallback
-        const downloadUrl =
-          mediaInfo.downloadLinks?.hd || mediaInfo.downloadLinks?.sd;
-        if (downloadUrl) {
-          window.open(downloadUrl, "_blank");
-        } else {
-          alert(
-            `Download ${mediaInfo.type === "video" ? "Video" : "Foto"} - Instagram`,
-          );
-        }
+      const data = await readApiResponse<MediaInfo>(response);
+      if (!response.ok || !data.downloadUrl) {
+        throw new Error(data.error || "Unduhan Instagram tidak tersedia.");
       }
+      window.location.assign(data.downloadUrl);
     } catch (err) {
-      console.error("Download error:", err);
-      alert(
-        `Download ${mediaInfo.type === "video" ? "Video" : "Foto"} - Instagram`,
-      );
+      setError(err instanceof Error ? err.message : "Gagal menyiapkan unduhan Instagram.");
     } finally {
       setDownloading(false);
     }
@@ -130,8 +112,7 @@ export default function InstagramPage() {
               <span className="text-gray-800 dark:text-white"> Content</span>
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Download video, foto, dan reels dari Instagram dengan mudah dan
-              cepat.
+              Ambil informasi dan unduh media Instagram publik yang didukung layanan.
             </p>
           </div>
 
@@ -216,7 +197,7 @@ export default function InstagramPage() {
                         </div>
                       </div>
                       <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                        {mediaInfo.duration || "0:30"}
+                        {mediaInfo.duration == null ? "Durasi tidak tersedia" : mediaInfo.duration}
                       </div>
                     </>
                   )}
@@ -261,11 +242,11 @@ export default function InstagramPage() {
                     <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                       <span className="flex items-center gap-1">
                         <FaHeart className="w-4 h-4 text-pink-500" />
-                        {mediaInfo.likes?.toLocaleString() || "0"} likes
+                        {mediaInfo.likes == null ? "N/A" : mediaInfo.likes.toLocaleString()} likes
                       </span>
                       <span className="flex items-center gap-1">
                         <FaComment className="w-4 h-4 text-blue-500" />
-                        {mediaInfo.comments?.toLocaleString() || "0"} comments
+                        {mediaInfo.comments == null ? "N/A" : mediaInfo.comments.toLocaleString()} comments
                       </span>
                     </div>
                   </div>
@@ -304,7 +285,7 @@ export default function InstagramPage() {
                 Download Reels
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Download Instagram Reels dengan kualitas HD dan tanpa watermark.
+                Unduh media Instagram publik dalam format yang tersedia.
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
@@ -327,7 +308,7 @@ export default function InstagramPage() {
                 Cepat & Mudah
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Proses download cepat dengan interface yang user-friendly.
+                Pemrosesan dilakukan untuk tautan publik yang didukung.
               </p>
             </div>
           </div>
@@ -339,7 +320,7 @@ export default function InstagramPage() {
             </h4>
             <ul className="text-sm text-purple-700 dark:text-purple-300 space-y-1">
               <li>• Salin URL dari post, reel, atau story Instagram</li>
-              <li>• Support untuk post public dan private (jika diizinkan)</li>
+              <li>• Dukungan untuk post publik yang dapat diakses</li>
               <li>• Download dalam resolusi asli untuk hasil terbaik</li>
             </ul>
           </div>

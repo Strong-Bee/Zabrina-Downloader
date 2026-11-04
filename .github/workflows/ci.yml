@@ -30,3 +30,23 @@ jobs:
         run: npm run typecheck
       - name: Build
         run: npm run build
+
+  media-service-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: media-service/requirements.txt
+      - name: Install media service dependencies
+        run: python -m pip install -r media-service/requirements.txt
+      - name: Compile media service
+        run: python -m compileall -q media-service
+      - name: Import media service
+        run: python -c "import sys; sys.path.insert(0, 'media-service'); import app; print('media service import OK')"
+        env:
+          MEDIA_SERVICE_API_KEY: ci-test-secret-at-least-32-characters-long
