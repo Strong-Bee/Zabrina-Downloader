@@ -239,7 +239,7 @@ export default function TiktokPage() {
 
                   {/* Duration Badge */}
                   <div className="absolute bottom-4 right-4 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                    {videoInfo.duration ? `${videoInfo.duration}s` : "0:00"}
+                    {videoInfo.duration != null ? `${videoInfo.duration}s` : "Durasi tidak tersedia"}
                   </div>
                 </div>
 
@@ -272,7 +272,7 @@ export default function TiktokPage() {
                         />
                         <div>
                           <div className="text-white font-medium">
-                            @{videoInfo.author.username || "username_tiktok"}
+                            {videoInfo.author.username ? `@${videoInfo.author.username}` : videoInfo.author.nickname || "TikTok user"}
                           </div>
                           <div className="text-gray-400 text-sm">
                             {videoInfo.author.nickname || "User TikTok"}
@@ -285,15 +285,15 @@ export default function TiktokPage() {
                     <div className="flex flex-wrap gap-4 text-sm text-gray-300 mb-4">
                       <span className="flex items-center gap-1">
                         <FiEye className="w-4 h-4" />
-                        {(videoInfo.views || 0).toLocaleString()} views
+                        {videoInfo.views != null ? videoInfo.views.toLocaleString() : "Tidak tersedia"} views
                       </span>
                       <span className="flex items-center gap-1">
                         <FaHeart className="w-4 h-4 text-[#ff0050]" />
-                        {(videoInfo.likes || 0).toLocaleString()} likes
+                        {videoInfo.likes != null ? videoInfo.likes.toLocaleString() : "Tidak tersedia"} likes
                       </span>
                       <span className="flex items-center gap-1">
                         <FaComment className="w-4 h-4 text-[#00f2ea]" />
-                        {(videoInfo.comments || 0).toLocaleString()} comments
+                        {videoInfo.comments != null ? videoInfo.comments.toLocaleString() : "Tidak tersedia"} comments
                       </span>
                     </div>
                   </div>
