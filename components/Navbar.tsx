@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MdDownload } from "react-icons/md";
 import { FiMenu, FiX } from "react-icons/fi";
 import { FaYoutube, FaTiktok, FaInstagram, FaFacebook } from "react-icons/fa";
@@ -8,12 +8,6 @@ import Link from "next/link";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   const navLinks = [
     { name: "Beranda", href: "/" },
     { name: "YouTube", href: "/Youtube", icon: FaYoutube },
@@ -21,30 +15,6 @@ export default function Navbar() {
     { name: "Instagram", href: "/Instagram", icon: FaInstagram },
     { name: "Facebook", href: "/Facebook", icon: FaFacebook },
   ];
-
-  if (!isMounted) {
-    return (
-      <nav className="fixed top-0 w-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-md z-50 border-b border-gray-200/50 dark:border-gray-700/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-pink-600 rounded-xl flex items-center justify-center">
-                <MdDownload className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold">
-                <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600 bg-clip-text text-transparent">
-                  Zabrina
-                </span>
-                <span className="text-gray-800 dark:text-white">
-                  Downloader
-                </span>
-              </span>
-            </div>
-          </div>
-        </div>
-      </nav>
-    );
-  }
 
   return (
     <nav className="fixed top-0 w-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-md z-50 border-b border-gray-200/50 dark:border-gray-700/50">
