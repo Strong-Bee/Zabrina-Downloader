@@ -198,7 +198,7 @@ export default function TiktokPage() {
             <div className="flex flex-wrap gap-4 mt-4 text-sm text-gray-400">
               <span className="flex items-center gap-1">
                 <FiClock className="w-4 h-4" />
-                Support semua video
+                Video publik
               </span>
               <span className="flex items-center gap-1">
                 <FaCheckCircle className="w-4 h-4 text-[#00f2ea]" />
@@ -307,7 +307,7 @@ export default function TiktokPage() {
                       onClick={() =>
                         handleDownload(
                           "videoNoWatermark",
-                          "Video (Tanpa Watermark)",
+                          "Video",
                         )
                       }
                       disabled={downloading === "videoNoWatermark"}
@@ -354,9 +354,9 @@ export default function TiktokPage() {
               <div className="w-12 h-12 bg-[#00f2ea]/20 rounded-xl flex items-center justify-center mb-4">
                 <FaVideo className="w-6 h-6 text-[#00f2ea]" />
               </div>
-              <h3 className="font-semibold text-white mb-2">Tanpa Watermark</h3>
+              <h3 className="font-semibold text-white mb-2">Media publik</h3>
               <p className="text-sm text-gray-300">
-                Download video TikTok tanpa watermark atau logo apapun.
+                Unduh media publik sesuai format yang tersedia.
               </p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-white/20 transition">
@@ -387,7 +387,7 @@ export default function TiktokPage() {
             <ul className="text-sm text-blue-300 space-y-1">
               <li>• Salin URL dari video TikTok yang ingin di download</li>
               <li>• Pilih kualitas video atau audio sesuai kebutuhan</li>
-              <li>• Video akan terdownload tanpa watermark</li>
+              <li>• Unduhan tersedia sesuai format yang disediakan platform</li>
               <li>• Pastikan video tidak di-private atau dihapus</li>
             </ul>
           </div>
