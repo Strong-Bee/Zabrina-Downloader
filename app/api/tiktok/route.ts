@@ -5,8 +5,9 @@ import { readPlatformUrl } from "@/lib/platform-url";
 export const runtime = "nodejs";
 
 const require = createRequire(import.meta.url);
+type TikTokResult = { status?: boolean; result?: Record<string, unknown> };
 const { tiktokdl } = require("@mrnima/tiktok-downloader") as {
-  tiktokdl: (url: string) => Promise<any>;
+  tiktokdl: (url: string) => Promise<TikTokResult>;
 };
 
 export async function POST(request: Request) {
@@ -22,25 +23,30 @@ export async function POST(request: Request) {
     }
 
     const data = response.result;
+    const author = data.author && typeof data.author === "object"
+      ? data.author as Record<string, unknown>
+      : {};
+    const asText = (value: unknown, fallback = "") => typeof value === "string" ? value : fallback;
+    const asNumber = (value: unknown) => typeof value === "number" ? value : 0;
     return NextResponse.json({
       success: true,
       data: {
-        title: data.title || "Video TikTok",
-        description: data.title || "Video dari TikTok",
-        thumbnail: data.cover || "",
-        duration: Number(data.duration) || 0,
-        views: Number(data.play_count) || 0,
-        likes: Number(data.digg_count) || 0,
-        comments: Number(data.comment_count) || 0,
+        title: asText(data.title, "Video TikTok"),
+        description: asText(data.title, "Video dari TikTok"),
+        thumbnail: asText(data.cover),
+        duration: asNumber(data.duration),
+        views: asNumber(data.play_count),
+        likes: asNumber(data.digg_count),
+        comments: asNumber(data.comment_count),
         author: {
-          username: data.author?.unique_id || "",
-          nickname: data.author?.nickname || "TikTok user",
-          avatar: data.author?.avatar || "",
+          username: asText(author.unique_id),
+          nickname: asText(author.nickname, "TikTok user"),
+          avatar: asText(author.avatar),
         },
         downloadLinks: {
-          videoNoWatermark: data.nowm || null,
-          video: data.wm || null,
-          audio: data.music || null,
+          videoNoWatermark: asText(data.nowm) || null,
+          video: asText(data.wm) || null,
+          audio: asText(data.music) || null,
         },
       },
     });
