@@ -366,7 +366,7 @@ export default function TiktokPage() {
               </div>
               <h3 className="font-semibold text-white mb-2">Cepat & Gratis</h3>
               <p className="text-sm text-gray-300">
-                Proses download super cepat dan gratis tanpa batasan.
+                Pemrosesan bergantung pada ketersediaan sumber media dan batasan platform.
               </p>
             </div>
           </div>
@@ -377,7 +377,7 @@ export default function TiktokPage() {
               💡 Tips Download TikTok
             </h4>
             <ul className="text-sm text-blue-300 space-y-1">
-              <li>• Salin URL dari video TikTok yang ingin di download</li>
+              <li>• Salin tautan video TikTok publik</li>
               <li>• Pilih kualitas video atau audio sesuai kebutuhan</li>
               <li>• Unduhan tersedia sesuai format yang disediakan platform</li>
               <li>• Pastikan video tidak di-private atau dihapus</li>
