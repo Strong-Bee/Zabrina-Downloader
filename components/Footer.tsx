@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { MdDownload } from "react-icons/md";
 import { FaGithub, FaTwitter, FaYoutube, FaInstagram } from "react-icons/fa";
 
