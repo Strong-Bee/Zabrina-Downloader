@@ -1,29 +1,29 @@
 import { NextResponse } from "next/server";
 import ytdl from "ytdl-core";
-import { readPlatformUrl } from "@/lib/platform-url";
+import { validatePlatformUrl } from "@/lib/platform-url";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const input = await readPlatformUrl(request, "youtube");
-  if ("error" in input) {
-    return NextResponse.json({ success: false, error: input.error }, { status: 400 });
-  }
-
-  let quality: unknown;
+  let body: { url?: unknown; quality?: unknown };
   try {
-    const body = await request.clone().json() as { quality?: unknown };
-    quality = body.quality;
+    body = await request.json() as { url?: unknown; quality?: unknown };
   } catch {
     return NextResponse.json({ success: false, error: "Body request harus berupa JSON yang valid." }, { status: 400 });
   }
 
+  const url = validatePlatformUrl(body.url, "youtube");
+  if (!url || !ytdl.validateURL(url)) {
+    return NextResponse.json({ success: false, error: "URL YouTube tidak valid atau host tidak didukung." }, { status: 400 });
+  }
+
+  const quality = body.quality;
   if (!["hd", "sd", "low", "audio"].includes(String(quality))) {
     return NextResponse.json({ success: false, error: "Pilihan kualitas tidak valid." }, { status: 400 });
   }
 
   try {
-    const info = await ytdl.getInfo(input.url);
+    const info = await ytdl.getInfo(url);
     const formats = quality === "audio"
       ? ytdl.filterFormats(info.formats, "audioonly")
       : ytdl.filterFormats(info.formats, "videoandaudio");
