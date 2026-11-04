@@ -380,7 +380,7 @@ export default function TiktokPage() {
               <li>• Salin tautan video TikTok publik</li>
               <li>• Pilih kualitas video atau audio sesuai kebutuhan</li>
               <li>• Unduhan tersedia sesuai format yang disediakan platform</li>
-              <li>• Pastikan video tidak di-private atau dihapus</li>
+              <li>• Pastikan video bersifat publik dan belum dihapus</li>
             </ul>
           </div>
         </div>
