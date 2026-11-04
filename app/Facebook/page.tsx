@@ -112,7 +112,7 @@ export default function FacebookPage() {
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Ambil informasi dan unduh video Facebook publik dengan format yang tersedia.
-              public dan private.
+              publik.
             </p>
           </div>
 
