@@ -320,7 +320,7 @@ export default function InstagramPage() {
             </h4>
             <ul className="text-sm text-purple-700 dark:text-purple-300 space-y-1">
               <li>• Salin URL dari post, reel, atau story Instagram</li>
-              <li>• Support untuk post public dan private (jika diizinkan)</li>
+              <li>• Dukungan untuk post publik yang dapat diakses</li>
               <li>• Download dalam resolusi asli untuk hasil terbaik</li>
             </ul>
           </div>
