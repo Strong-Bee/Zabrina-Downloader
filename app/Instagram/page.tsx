@@ -286,7 +286,7 @@ export default function InstagramPage() {
                 Download Reels
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Download Instagram Reels dengan kualitas HD dan tanpa watermark.
+                Unduh media Instagram publik dalam format yang tersedia.
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
