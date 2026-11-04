@@ -34,7 +34,7 @@ export default function TiktokPage() {
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState<string | null>(null);
-  const validateTiktokUrl = (url) => {
+  const validateTiktokUrl = (url: string) => {
     const patterns = [
       /(?:tiktok\.com\/@)([\w.-]+)\/video\/(\d+)/,
       /(?:tiktok\.com\/@)([\w.-]+)\/v\/(\d+)/,
@@ -104,7 +104,7 @@ export default function TiktokPage() {
     }
   };
 
-  const handleDownload = async (type, label) => {
+  const handleDownload = async (type: string, label: string) => {
     if (!videoInfo) return;
 
     setDownloading(type);
