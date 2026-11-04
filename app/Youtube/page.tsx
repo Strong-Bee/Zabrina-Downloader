@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -13,18 +13,23 @@ import {
 } from "react-icons/fa";
 import { FiClock, FiEye, FiThumbsUp, FiLoader } from "react-icons/fi";
 
+type VideoInfo = {
+  title?: string;
+  thumbnail?: string;
+  duration?: string | number;
+  views?: number;
+  likes?: number;
+  channelName?: string;
+  description?: string;
+  downloadLinks?: Record<string, string | null | undefined>;
+};
+
 export default function YoutubePage() {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [videoInfo, setVideoInfo] = useState(null);
+  const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [error, setError] = useState("");
-  const [downloading, setDownloading] = useState(null);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
+  const [downloading, setDownloading] = useState<string | null>(null);
   // Validasi URL YouTube (Ditambahkan dukungan untuk YouTube Shorts)
   const validateYoutubeUrl = (url) => {
     const patterns = [
@@ -79,15 +84,17 @@ export default function YoutubePage() {
       // Tampilkan pesan error yang lebih user-friendly
       let errorMessage = "Terjadi kesalahan saat memproses video";
 
-      if (err.message?.includes("Invalid URL")) {
+      const message = err instanceof Error ? err.message : "";
+
+      if (message.includes("Invalid URL")) {
         errorMessage = "URL YouTube tidak valid. Pastikan URL benar.";
-      } else if (err.message?.includes("404")) {
+      } else if (message.includes("404")) {
         errorMessage =
           "Video tidak ditemukan. Mungkin video telah dihapus atau di-private.";
-      } else if (err.message?.includes("network")) {
+      } else if (message.includes("network")) {
         errorMessage = "Koneksi internet bermasalah. Periksa koneksi Anda.";
-      } else if (err.message) {
-        errorMessage = err.message;
+      } else if (message) {
+        errorMessage = message;
       }
 
       setError(errorMessage);
@@ -144,10 +151,6 @@ export default function YoutubePage() {
     { label: "480p (SD)", size: "15 MB", quality: "low" },
     { label: "Audio MP3", size: "5 MB", quality: "audio", icon: FaMusic },
   ];
-
-  if (!isMounted) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">

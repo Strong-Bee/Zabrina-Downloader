@@ -15,12 +15,23 @@ import {
 } from "react-icons/fa";
 import { FiClock, FiLoader, FiEye } from "react-icons/fi";
 
+type VideoInfo = {
+  title?: string;
+  description?: string;
+  thumbnail?: string;
+  duration?: string | number;
+  views?: number;
+  likes?: number;
+  comments?: number;
+  downloadLinks?: Record<string, string | null | undefined>;
+};
+
 export default function FacebookPage() {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [videoInfo, setVideoInfo] = useState(null);
+  const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [error, setError] = useState("");
-  const [downloading, setDownloading] = useState(null);
+  const [downloading, setDownloading] = useState<string | null>(null);
 
   const handleFetchVideo = async () => {
     if (!url) {
@@ -53,7 +64,7 @@ export default function FacebookPage() {
         throw new Error("Data video tidak ditemukan");
       }
     } catch (err) {
-      setError(err.message || "Terjadi kesalahan saat memproses video");
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan saat memproses video");
       console.error("Error:", err);
     } finally {
       setIsLoading(false);
@@ -190,7 +201,7 @@ export default function FacebookPage() {
                     alt={videoInfo.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.target.src = "https://via.placeholder.com/640x360";
+                      e.currentTarget.src = "https://via.placeholder.com/640x360";
                     }}
                   />
                   <div className="absolute inset-0 flex items-center justify-center">

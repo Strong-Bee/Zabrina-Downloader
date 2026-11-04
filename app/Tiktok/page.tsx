@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -16,18 +16,24 @@ import {
 } from "react-icons/fa";
 import { FiClock, FiLoader, FiEye } from "react-icons/fi";
 
+type VideoInfo = {
+  title?: string;
+  description?: string;
+  thumbnail?: string;
+  duration?: string | number;
+  views?: number;
+  likes?: number;
+  comments?: number;
+  author?: { username?: string; nickname?: string; avatar?: string };
+  downloadLinks?: Record<string, string | null | undefined>;
+};
+
 export default function TiktokPage() {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [videoInfo, setVideoInfo] = useState(null);
+  const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [error, setError] = useState("");
-  const [downloading, setDownloading] = useState(null);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
+  const [downloading, setDownloading] = useState<string | null>(null);
   const validateTiktokUrl = (url) => {
     const patterns = [
       /(?:tiktok\.com\/@)([\w.-]+)\/video\/(\d+)/,
@@ -79,15 +85,17 @@ export default function TiktokPage() {
 
       let errorMessage = "Terjadi kesalahan saat memproses video";
 
-      if (err.message?.includes("Invalid URL")) {
+      const message = err instanceof Error ? err.message : "";
+
+      if (message.includes("Invalid URL")) {
         errorMessage = "URL TikTok tidak valid. Pastikan URL benar.";
-      } else if (err.message?.includes("404")) {
+      } else if (message.includes("404")) {
         errorMessage =
           "Video tidak ditemukan. Mungkin video telah dihapus atau di-private.";
-      } else if (err.message?.includes("network")) {
+      } else if (message.includes("network")) {
         errorMessage = "Koneksi internet bermasalah. Periksa koneksi Anda.";
-      } else if (err.message) {
-        errorMessage = err.message;
+      } else if (message) {
+        errorMessage = message;
       }
 
       setError(errorMessage);
@@ -134,10 +142,6 @@ export default function TiktokPage() {
       setDownloading(null);
     }
   };
-
-  if (!isMounted) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800">

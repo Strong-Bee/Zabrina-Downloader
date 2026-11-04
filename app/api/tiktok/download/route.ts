@@ -1,54 +1,53 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createRequire } from 'module';
+import { NextResponse } from "next/server";
+import { createRequire } from "node:module";
+import { validatePlatformUrl } from "@/lib/platform-url";
 
-// Trik bypass Turbopack: Memuat library menggunakan createRequire Node.js
+export const runtime = "nodejs";
+
 const require = createRequire(import.meta.url);
-const { tiktokdl } = require('@mrnima/tiktok-downloader');
+type TikTokResult = { status?: boolean; result?: Record<string, unknown> };
+const { tiktokdl } = require("@mrnima/tiktok-downloader") as {
+  tiktokdl: (url: string) => Promise<TikTokResult>;
+};
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
+  let body: { url?: unknown; type?: unknown };
   try {
-    const { url, type } = await request.json();
+    body = await request.json() as { url?: unknown; type?: unknown };
+  } catch {
+    return NextResponse.json({ success: false, error: "Body request harus berupa JSON yang valid." }, { status: 400 });
+  }
 
-    if (!url) {
-      return NextResponse.json(
-        { error: 'URL tidak ditemukan' },
-        { status: 400 }
-      );
+  const url = validatePlatformUrl(body.url, "tiktok");
+  if (!url) {
+    return NextResponse.json({ success: false, error: "URL TikTok tidak valid atau host tidak didukung." }, { status: 400 });
+  }
+
+  if (!["videoNoWatermark", "video", "audio"].includes(String(body.type))) {
+    return NextResponse.json({ success: false, error: "Jenis unduhan tidak valid." }, { status: 400 });
+  }
+
+  try {
+    const response = await tiktokdl(url);
+    if (!response?.status || !response?.result) {
+      return NextResponse.json({ success: false, error: "Video TikTok tidak ditemukan atau tidak dapat diakses." }, { status: 404 });
     }
 
-    // Panggil ulang library untuk mengambil direct link CDN terbaru
-    const result = await tiktokdl(url);
+    const data = response.result;
+    const candidate = body.type === "videoNoWatermark"
+      ? data.nowm
+      : body.type === "video"
+        ? data.wm
+        : data.music;
+    const downloadUrl = typeof candidate === "string" ? candidate : null;
 
-    if (!result || !result.status || !result.result) {
-      return NextResponse.json(
-        { error: 'Gagal memproses unduhan video.' },
-        { status: 400 }
-      );
+    if (!downloadUrl || !downloadUrl.startsWith("https://")) {
+      return NextResponse.json({ success: false, error: "Link unduhan tidak tersedia." }, { status: 404 });
     }
 
-    const tiktokData = result.result;
-    let downloadUrl = '#';
-
-    // Memilah link unduhan berdasarkan tipe yang diklik user di frontend
-    if (type === 'videoNoWatermark') {
-      downloadUrl = tiktokData.nowm; // Link video tanpa watermark
-    } else if (type === 'video') {
-      downloadUrl = tiktokData.wm;   // Link video dengan watermark
-    } else if (type === 'audio') {
-      downloadUrl = tiktokData.music; // Link audio MP3
-    }
-
-    return NextResponse.json({
-      success: true,
-      downloadUrl: downloadUrl,
-      title: tiktokData.title || 'TikTok Video',
-    });
-
-  } catch (error: any) {
-    console.error('TikTok Download Library Error:', error);
-    return NextResponse.json(
-      { error: error.message || 'Terjadi kesalahan saat download' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, downloadUrl, title: typeof data.title === "string" ? data.title : "TikTok Video" });
+  } catch (error) {
+    console.error("TikTok download error:", error);
+    return NextResponse.json({ success: false, error: "Gagal menyiapkan unduhan TikTok. Coba lagi." }, { status: 502 });
   }
 }
