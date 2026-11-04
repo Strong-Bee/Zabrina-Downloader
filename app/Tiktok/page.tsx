@@ -19,7 +19,7 @@ import { FiClock, FiLoader, FiEye } from "react-icons/fi";
 export default function TiktokPage() {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [videoInfo, setVideoInfo] = useState(null);
+  const [videoInfo, setVideoInfo] = useState<any>(null);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -79,12 +79,12 @@ export default function TiktokPage() {
 
       let errorMessage = "Terjadi kesalahan saat memproses video";
 
-      if (err.message?.includes("Invalid URL")) {
+      const message = err instanceof Error ? err.message : "";\n\n      if (message.includes("Invalid URL")) {
         errorMessage = "URL TikTok tidak valid. Pastikan URL benar.";
-      } else if (err.message?.includes("404")) {
+      } else if (message.includes("404")) {
         errorMessage =
           "Video tidak ditemukan. Mungkin video telah dihapus atau di-private.";
-      } else if (err.message?.includes("network")) {
+      } else if (message.includes("network")) {
         errorMessage = "Koneksi internet bermasalah. Periksa koneksi Anda.";
       } else if (err.message) {
         errorMessage = err.message;
