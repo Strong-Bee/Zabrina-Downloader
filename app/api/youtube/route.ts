@@ -4,6 +4,7 @@ import { callMediaService } from "@/lib/media-service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 async function handleMetadata(rawUrl: unknown) {
   const url = validatePlatformUrl(rawUrl, "youtube");
