@@ -203,7 +203,7 @@ export default function YoutubePage() {
               </span>
               <span className="flex items-center gap-1">
                 <FaCheckCircle className="w-4 h-4 text-green-500" />
-                Tanpa watermark
+                Format media
               </span>
               <span className="flex items-center gap-1">
                 <FaMusic className="w-4 h-4 text-purple-500" />
@@ -314,7 +314,7 @@ export default function YoutubePage() {
                 HD Quality
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Download video YouTube dalam kualitas 1080p, 720p, dan 480p.
+                Pilih kualitas video sesuai format yang tersedia.
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition">
@@ -322,7 +322,7 @@ export default function YoutubePage() {
                 <FaMusic className="w-6 h-6 text-purple-600" />
               </div>
               <h3 className="font-semibold text-gray-800 dark:text-white mb-2">
-                Audio MP3
+                Audio (format asli)
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Ekstrak audio dari video YouTube dan download dalam format MP3.
@@ -336,7 +336,7 @@ export default function YoutubePage() {
                 Tanpa Watermark
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Download video tanpa watermark atau logo apapun. Hasil bersih.
+                Tautan media diproses dari video publik yang didukung.
               </p>
             </div>
           </div>
