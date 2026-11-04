@@ -16,10 +16,11 @@ import { FiClock, FiEye, FiThumbsUp, FiLoader } from "react-icons/fi";
 type VideoInfo = {
   title?: string;
   thumbnail?: string;
-  duration?: string | number;
-  views?: number;
-  likes?: number;
+  duration?: string | number | null;
+  views?: number | null;
+  likes?: number | null;
   channelName?: string;
+  metadataSource?: "ytdl" | "oembed";
   description?: string;
   downloadLinks?: Record<string, string | null | undefined>;
 };
@@ -266,7 +267,7 @@ export default function YoutubePage() {
                     </div>
                   </div>
                   <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                    {videoInfo.duration || "0:00"}
+                    {videoInfo.duration || "Tidak tersedia"}
                   </div>
                 </div>
                 <div className="p-6 flex flex-col justify-between">
@@ -277,11 +278,11 @@ export default function YoutubePage() {
                     <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                       <span className="flex items-center gap-1">
                         <FiEye className="w-4 h-4" />
-                        {videoInfo.views?.toLocaleString() || "0"} views
+                        {videoInfo.views == null ? "N/A" : videoInfo.views.toLocaleString()} views
                       </span>
                       <span className="flex items-center gap-1">
                         <FiThumbsUp className="w-4 h-4" />
-                        {videoInfo.likes?.toLocaleString() || "0"} likes
+                        {videoInfo.likes == null ? "N/A" : videoInfo.likes.toLocaleString()} likes
                       </span>
                       <span className="flex items-center gap-1">
                         <FaYoutube className="w-4 h-4 text-red-500" />
@@ -315,14 +316,16 @@ export default function YoutubePage() {
                               <span className="font-medium">
                                 {quality.label}
                               </span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {quality.size}
-                              </span>
                             </>
                           )}
                         </button>
                       ))}
                     </div>
+                    {videoInfo.metadataSource === "oembed" && (
+                      <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">
+                        Metadata dasar berhasil dimuat. Statistik dan tautan unduhan belum tersedia dari sumber cadangan.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
