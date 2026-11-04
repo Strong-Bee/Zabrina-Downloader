@@ -1,35 +1,93 @@
 import { NextResponse } from "next/server";
-import ytdl from "ytdl-core";
 import { validatePlatformUrl } from "@/lib/platform-url";
 
 export const runtime = "nodejs";
 
+type YoutubeOEmbed = {
+  title?: string;
+  author_name?: string;
+  thumbnail_url?: string;
+};
+
+function getYoutubeVideoId(input: string): string | null {
+  try {
+    const url = new URL(input);
+    const host = url.hostname.toLowerCase();
+    let id: string | null = null;
+
+    if (host === "youtu.be" || host === "www.youtu.be") {
+      id = url.pathname.split("/").filter(Boolean)[0] ?? null;
+    } else if (host.endsWith("youtube.com")) {
+      if (url.pathname === "/watch") id = url.searchParams.get("v");
+      else if (/^\/(embed|shorts|live|v)\//.test(url.pathname)) {
+        id = url.pathname.split("/").filter(Boolean)[1] ?? null;
+      }
+    }
+
+    return id && /^[\w-]{11}$/.test(id) ? id : null;
+  } catch {
+    return null;
+  }
+}
+
 async function extractYoutubeData(input: unknown) {
   const url = validatePlatformUrl(input, "youtube");
-  if (!url || !ytdl.validateURL(url)) {
-    throw new Error("URL YouTube tidak valid atau host tidak didukung.");
+  if (!url) throw new Error("URL YouTube tidak valid atau host tidak didukung.");
+
+  const videoId = getYoutubeVideoId(url);
+  if (!videoId) throw new Error("ID video YouTube tidak dapat dibaca.");
+
+  // Use YouTube's public oEmbed endpoint for metadata. This avoids the
+  // obsolete ytdl-core player-client flow that can fail with HTTP 410.
+  const endpoint = new URL("https://www.youtube.com/oembed");
+  endpoint.searchParams.set("url", `https://www.youtube.com/watch?v=${videoId}`);
+  endpoint.searchParams.set("format", "json");
+
+  const response = await fetch(endpoint, {
+    headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(10_000),
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    if (response.status === 404 || response.status === 401) {
+      throw new Error("Video tidak tersedia untuk metadata publik (mungkin privat, dihapus, atau dibatasi).");
+    }
+    throw new Error(`YouTube oEmbed merespons HTTP ${response.status}.`);
   }
 
-  const info = await ytdl.getInfo(url);
-  const details = info.videoDetails;
-  const progressive = ytdl.filterFormats(info.formats, "videoandaudio");
-  const audio = ytdl.filterFormats(info.formats, "audioonly");
-  const seconds = Number(details.lengthSeconds) || 0;
+  const metadata = (await response.json()) as YoutubeOEmbed;
+  if (!metadata.title) throw new Error("YouTube tidak mengembalikan metadata video.");
 
   return {
-    title: details.title || "Video YouTube",
-    thumbnail: details.thumbnails?.at(-1)?.url || "",
-    duration: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`,
-    views: Number(details.viewCount) || 0,
-    likes: Number(details.likes) || 0,
-    channelName: details.author?.name || "Unknown Channel",
-    description: details.description || "",
-    downloadLinks: {
-      hd: progressive.find((format) => format.qualityLabel === "720p")?.url || progressive[0]?.url || null,
-      sd: progressive.find((format) => format.qualityLabel === "480p" || format.qualityLabel === "360p")?.url || null,
-      audio: audio[0]?.url || null,
-    },
+    title: metadata.title,
+    thumbnail: metadata.thumbnail_url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+    duration: null,
+    views: null,
+    likes: null,
+    channelName: metadata.author_name || "Unknown Channel",
+    description: "",
+    downloadLinks: { hd: null, sd: null, audio: null },
+    metadataSource: "YouTube oEmbed",
   };
+}
+
+async function handleMetadata(input: unknown) {
+  if (!validatePlatformUrl(input, "youtube")) {
+    return NextResponse.json(
+      { success: false, error: "URL YouTube tidak valid atau host tidak didukung." },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const data = await extractYoutubeData(input);
+    return NextResponse.json({ success: true, data });
+  } catch (error) {
+    console.error("YouTube metadata error:", error);
+    const message = error instanceof Error ? error.message : "Terjadi kesalahan saat mengambil metadata.";
+    return NextResponse.json({ success: false, error: message }, { status: 502 });
+  }
 }
 
 export async function POST(request: Request) {
@@ -37,35 +95,20 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ success: false, error: "Body request harus berupa JSON yang valid." }, { status: 400 });
+    return NextResponse.json(
+      { success: false, error: "Body request harus berupa JSON yang valid." },
+      { status: 400 },
+    );
   }
 
   const input = body && typeof body === "object" && "url" in body
     ? (body as { url?: unknown }).url
     : null;
 
-  if (!validatePlatformUrl(input, "youtube")) {
-    return NextResponse.json({ success: false, error: "URL YouTube tidak valid atau host tidak didukung." }, { status: 400 });
-  }
-
-  try {
-    return NextResponse.json({ success: true, data: await extractYoutubeData(input) });
-  } catch (error) {
-    console.error("YouTube metadata error:", error);
-    return NextResponse.json({ success: false, error: "Gagal mengambil metadata YouTube. Coba lagi atau periksa URL video." }, { status: 502 });
-  }
+  return handleMetadata(input);
 }
 
 export async function GET(request: Request) {
   const input = new URL(request.url).searchParams.get("url");
-  if (!validatePlatformUrl(input, "youtube")) {
-    return NextResponse.json({ success: false, error: "Parameter URL YouTube tidak valid." }, { status: 400 });
-  }
-
-  try {
-    return NextResponse.json({ success: true, data: await extractYoutubeData(input) });
-  } catch (error) {
-    console.error("YouTube metadata error:", error);
-    return NextResponse.json({ success: false, error: "Gagal mengambil metadata YouTube. Coba lagi atau periksa URL video." }, { status: 502 });
-  }
+  return handleMetadata(input);
 }
