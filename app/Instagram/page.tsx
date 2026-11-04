@@ -13,7 +13,7 @@ import {
   FaHeart,
   FaComment,
 } from "react-icons/fa";
-import { FiClock, FiLoader, FiEye } from "react-icons/fi";
+import { FiClock, FiLoader } from "react-icons/fi";
 
 type MediaInfo = {
   title?: string;
