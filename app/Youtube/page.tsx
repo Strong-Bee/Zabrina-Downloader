@@ -127,16 +127,7 @@ export default function YoutubePage() {
         // Buka link download di tab baru
         window.open(data.downloadUrl, "_blank");
       } else {
-        // Fallback: gunakan link yang sudah ada atau simulasi download
-        const downloadUrl = videoInfo.downloadLinks?.[quality];
-        if (downloadUrl && downloadUrl !== "#") {
-          window.open(downloadUrl, "_blank");
-        } else {
-          // Simulasi download untuk demo
-          alert(
-            `🎬 Download ${label} - ${videoInfo.title}\n\nFitur download akan segera aktif.`,
-          );
-        }
+        alert(data.error || `Gagal menyiapkan unduhan ${label}. Silakan coba lagi.`);
       }
     } catch (err) {
       console.error("Download error:", err);
