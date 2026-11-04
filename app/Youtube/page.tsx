@@ -175,15 +175,15 @@ export default function YoutubePage() {
             <div className="flex flex-wrap gap-4 mt-4 text-sm text-gray-500 dark:text-gray-400">
               <span className="flex items-center gap-1">
                 <FiClock className="w-4 h-4" />
-                Support video panjang
+                Metadata publik
               </span>
               <span className="flex items-center gap-1">
                 <FaCheckCircle className="w-4 h-4 text-green-500" />
-                Tanpa watermark
+                Thumbnail video
               </span>
               <span className="flex items-center gap-1">
-                <FaMusic className="w-4 h-4 text-purple-500" />
-                Ekstrak audio MP3
+                <FaYoutube className="w-4 h-4 text-red-500" />
+                Ekspor resmi
               </span>
             </div>
           </div>
@@ -215,7 +215,7 @@ export default function YoutubePage() {
                     </div>
                   </div>
                   <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                    {videoInfo.duration || "0:00"}
+                    {videoInfo.duration || "Durasi tidak tersedia"}
                   </div>
                 </div>
                 <div className="p-6 flex flex-col justify-between">
@@ -226,11 +226,11 @@ export default function YoutubePage() {
                     <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                       <span className="flex items-center gap-1">
                         <FiEye className="w-4 h-4" />
-                        {videoInfo.views?.toLocaleString() || "0"} views
+                        {typeof videoInfo.views === "number" ? `${videoInfo.views.toLocaleString()} views` : "Views tidak tersedia"}
                       </span>
                       <span className="flex items-center gap-1">
                         <FiThumbsUp className="w-4 h-4" />
-                        {videoInfo.likes?.toLocaleString() || "0"} likes
+                        {typeof videoInfo.likes === "number" ? `${videoInfo.likes.toLocaleString()} likes` : "Likes tidak tersedia"}
                       </span>
                       <span className="flex items-center gap-1">
                         <FaYoutube className="w-4 h-4 text-red-500" />
@@ -271,7 +271,7 @@ export default function YoutubePage() {
                 <FaVideo className="w-6 h-6 text-red-600" />
               </div>
               <h3 className="font-semibold text-gray-800 dark:text-white mb-2">
-                HD Quality
+                Metadata Video
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Lihat metadata dan thumbnail video publik yang tersedia melalui sumber resmi.
@@ -304,18 +304,16 @@ export default function YoutubePage() {
           {/* Tips */}
           <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
             <h4 className="font-semibold text-blue-800 dark:text-blue-400 mb-2">
-              💡 Tips Download YouTube
+              💡 Informasi Penggunaan
             </h4>
             <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
               <li>
                 • Pastikan URL YouTube valid (contoh:
                 https://youtube.com/watch?v=...)
               </li>
-              <li>• Pilih kualitas sesuai kebutuhan untuk menghemat kuota</li>
-              <li>
-                • Gunakan fitur audio MP3 untuk mendengarkan musik offline
-              </li>
-              <li>• Video dengan hak cipta mungkin tidak bisa di download</li>
+              <li>• Metadata oEmbed tidak menyediakan durasi, statistik, atau file media.</li>
+              <li>• Untuk video milik sendiri, ekspor melalui YouTube Studio atau Google Takeout.</li>
+              <li>• Pastikan Anda memiliki hak untuk menyimpan dan menggunakan konten.</li>
             </ul>
           </div>
         </div>
