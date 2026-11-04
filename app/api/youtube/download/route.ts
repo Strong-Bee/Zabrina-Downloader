@@ -9,17 +9,17 @@ export async function POST(request: Request) {
   try {
     body = await request.json() as { url?: unknown; quality?: unknown };
   } catch {
-    return NextResponse.json({ success: false, error: "Body request harus berupa JSON yang valid." }, { status: 400 });
+    return NextResponse.json({ success: false, code: "INVALID_JSON", error: "Body request harus berupa JSON yang valid." }, { status: 400 });
   }
 
   const url = validatePlatformUrl(body.url, "youtube");
   if (!url || !ytdl.validateURL(url)) {
-    return NextResponse.json({ success: false, error: "URL YouTube tidak valid atau host tidak didukung." }, { status: 400 });
+    return NextResponse.json({ success: false, code: "INVALID_URL", error: "URL YouTube tidak valid atau host tidak didukung." }, { status: 400 });
   }
 
   const quality = body.quality;
   if (!["hd", "sd", "low", "audio"].includes(String(quality))) {
-    return NextResponse.json({ success: false, error: "Pilihan kualitas tidak valid." }, { status: 400 });
+    return NextResponse.json({ success: false, code: "INVALID_QUALITY", error: "Pilihan kualitas tidak valid." }, { status: 400 });
   }
 
   try {
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
           : formats.find((format) => format.qualityLabel === "360p") || formats.at(-1);
 
     if (!preferred?.url) {
-      return NextResponse.json({ success: false, error: "Format unduhan yang diminta tidak tersedia." }, { status: 404 });
+      return NextResponse.json({ success: false, code: "FORMAT_UNAVAILABLE", error: "Format unduhan yang diminta tidak tersedia untuk video ini." }, { status: 404 });
     }
 
     return NextResponse.json({
@@ -47,7 +47,27 @@ export async function POST(request: Request) {
       quality: preferred.qualityLabel || "Audio",
     });
   } catch (error) {
-    console.error("YouTube download error:", error);
-    return NextResponse.json({ success: false, error: "Gagal menyiapkan unduhan YouTube. Coba lagi." }, { status: 502 });
+    const statusCode = typeof error === "object" && error !== null && "statusCode" in error
+      ? Number((error as { statusCode?: unknown }).statusCode)
+      : 0;
+
+    console.error("YouTube download preparation failed:", {
+      statusCode: Number.isFinite(statusCode) ? statusCode : 0,
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+
+    if (statusCode === 410) {
+      return NextResponse.json({
+        success: false,
+        code: "YOUTUBE_SOURCE_UNAVAILABLE",
+        error: "YouTube menolak permintaan unduhan dari server (HTTP 410). Metadata video mungkin tetap tampil, tetapi tautan unduhan tidak tersedia. Untuk video milik Anda, gunakan file asli atau ekspor melalui YouTube Studio/Google Takeout.",
+      }, { status: 503 });
+    }
+
+    return NextResponse.json({
+      success: false,
+      code: "DOWNLOAD_PREPARATION_FAILED",
+      error: "Server tidak dapat menyiapkan tautan unduhan untuk video ini. Coba lagi nanti atau gunakan sumber file yang Anda miliki izin untuk unduh.",
+    }, { status: 502 });
   }
 }
