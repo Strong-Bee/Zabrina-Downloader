@@ -137,6 +137,8 @@ export default function YoutubePage() {
     }
   };
 
+  const canPrepareDownload = videoInfo?.metadataSource !== "oembed";
+
   const qualityOptions = [
     { label: "1080p (HD)", size: "45 MB", quality: "hd" },
     { label: "720p (HD)", size: "25 MB", quality: "sd" },
@@ -294,7 +296,7 @@ export default function YoutubePage() {
                           onClick={() =>
                             handleDownload(quality.quality, quality.label)
                           }
-                          disabled={downloading === quality.quality}
+                          disabled={downloading === quality.quality || !canPrepareDownload}
                           className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {downloading === quality.quality ? (
