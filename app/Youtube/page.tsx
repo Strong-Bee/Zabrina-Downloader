@@ -302,7 +302,7 @@ export default function YoutubePage() {
                 <FaVideo className="w-6 h-6 text-red-600" />
               </div>
               <h3 className="font-semibold text-gray-800 dark:text-white mb-2">
-                HD Quality
+                Kualitas tersedia
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Pilih kualitas video sesuai format yang tersedia.
