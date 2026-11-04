@@ -104,7 +104,7 @@ export default function TiktokPage() {
     }
   };
 
-  const handleDownload = async (type, label) => {
+  const handleDownload = async (type: string, label: string) => {
     if (!videoInfo) return;
 
     setDownloading(type);
