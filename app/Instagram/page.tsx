@@ -15,10 +15,21 @@ import {
 } from "react-icons/fa";
 import { FiClock, FiLoader, FiEye } from "react-icons/fi";
 
+type MediaInfo = {
+  title?: string;
+  thumbnail?: string;
+  type?: string;
+  duration?: string | number;
+  likes?: number;
+  comments?: number;
+  author?: { username?: string; fullName?: string; avatar?: string };
+  downloadLinks?: Record<string, string | null | undefined>;
+};
+
 export default function InstagramPage() {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [mediaInfo, setMediaInfo] = useState<any>(null);
+  const [mediaInfo, setMediaInfo] = useState<MediaInfo | null>(null);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState(false);
 
