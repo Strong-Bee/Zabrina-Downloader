@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { readApiResponse } from "@/lib/client-api";
+import { validatePlatformUrl } from "@/lib/platform-url";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -21,10 +22,10 @@ type VideoInfo = {
   title?: string;
   description?: string;
   thumbnail?: string;
-  duration?: string | number;
-  views?: number;
-  likes?: number;
-  comments?: number;
+  duration?: string | number | null;
+  views?: number | null;
+  likes?: number | null;
+  comments?: number | null;
   author?: { username?: string; nickname?: string; avatar?: string };
   downloadLinks?: Record<string, string | null | undefined>;
 };
@@ -35,16 +36,7 @@ export default function TiktokPage() {
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState<string | null>(null);
-  const validateTiktokUrl = (url: string) => {
-    const patterns = [
-      /(?:tiktok\.com\/@)([\w.-]+)\/video\/(\d+)/,
-      /(?:tiktok\.com\/@)([\w.-]+)\/v\/(\d+)/,
-      /(?:vt\.tiktok\.com\/)([\w]+)/,
-      /(?:vm\.tiktok\.com\/)([\w]+)/, // Tambahan: support vm.tiktok.com
-      /(?:tiktok\.com\/t\/)([\w]+)/,
-    ];
-    return patterns.some((pattern) => pattern.test(url));
-  };
+
 
   const handleFetchVideo = async () => {
     if (!url) {
@@ -52,7 +44,7 @@ export default function TiktokPage() {
       return;
     }
 
-    if (!validateTiktokUrl(url)) {
+    if (!validatePlatformUrl(url, "tiktok")) {
       setError("URL TikTok tidak valid. Pastikan URL benar.");
       return;
     }
@@ -242,7 +234,7 @@ export default function TiktokPage() {
 
                   {/* Duration Badge */}
                   <div className="absolute bottom-4 right-4 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                    {videoInfo.duration ? `${videoInfo.duration}s` : "0:00"}
+                    {videoInfo.duration == null ? "Tidak tersedia" : `${videoInfo.duration}s`}
                   </div>
                 </div>
 
@@ -288,15 +280,15 @@ export default function TiktokPage() {
                     <div className="flex flex-wrap gap-4 text-sm text-gray-300 mb-4">
                       <span className="flex items-center gap-1">
                         <FiEye className="w-4 h-4" />
-                        {(videoInfo.views || 0).toLocaleString()} views
+                        {videoInfo.views == null ? "N/A" : videoInfo.views.toLocaleString()} views
                       </span>
                       <span className="flex items-center gap-1">
                         <FaHeart className="w-4 h-4 text-[#ff0050]" />
-                        {(videoInfo.likes || 0).toLocaleString()} likes
+                        {videoInfo.likes == null ? "N/A" : videoInfo.likes.toLocaleString()} likes
                       </span>
                       <span className="flex items-center gap-1">
                         <FaComment className="w-4 h-4 text-[#00f2ea]" />
-                        {(videoInfo.comments || 0).toLocaleString()} comments
+                        {videoInfo.comments == null ? "N/A" : videoInfo.comments.toLocaleString()} comments
                       </span>
                     </div>
                   </div>
@@ -326,7 +318,7 @@ export default function TiktokPage() {
                       )}
                     </button>
                     <button
-                      onClick={() => handleDownload("audio", "Audio MP3")}
+                      onClick={() => handleDownload("audio", "Audio (format asli)")}
                       disabled={downloading === "audio"}
                       className="w-full bg-white/10 text-white py-3 rounded-xl font-semibold hover:bg-white/20 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
@@ -363,9 +355,9 @@ export default function TiktokPage() {
               <div className="w-12 h-12 bg-[#ff0050]/20 rounded-xl flex items-center justify-center mb-4">
                 <FaMusic className="w-6 h-6 text-[#ff0050]" />
               </div>
-              <h3 className="font-semibold text-white mb-2">Audio MP3</h3>
+              <h3 className="font-semibold text-white mb-2">Audio (format asli)</h3>
               <p className="text-sm text-gray-300">
-                Ekstrak audio dari video TikTok dan download sebagai MP3.
+                Unduh audio dalam format sumber yang tersedia.
               </p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-white/20 transition">
