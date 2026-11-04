@@ -268,7 +268,7 @@ export default function FacebookPage() {
                 <FaVideo className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="font-semibold text-gray-800 dark:text-white mb-2">
-                HD Quality
+                Kualitas tersedia
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Unduh video Facebook publik dalam kualitas yang tersedia.
@@ -307,7 +307,7 @@ export default function FacebookPage() {
               <li>• Salin URL dari video Facebook yang ingin di download</li>
               <li>• Support video dari postingan, group, dan halaman</li>
               <li>• Pilih kualitas HD untuk hasil terbaik</li>
-              <li>• Video live streaming juga dapat didownload</li>
+              <li>• Hanya video publik yang didukung oleh extractor yang dapat diproses</li>
             </ul>
           </div>
         </div>
