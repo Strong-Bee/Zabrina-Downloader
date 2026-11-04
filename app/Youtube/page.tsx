@@ -13,10 +13,21 @@ import {
 } from "react-icons/fa";
 import { FiClock, FiEye, FiThumbsUp, FiLoader } from "react-icons/fi";
 
+type VideoInfo = {
+  title?: string;
+  thumbnail?: string;
+  duration?: string | number;
+  views?: number;
+  likes?: number;
+  channelName?: string;
+  description?: string;
+  downloadLinks?: Record<string, string | null | undefined>;
+};
+
 export default function YoutubePage() {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [videoInfo, setVideoInfo] = useState<any>(null);
+  const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState(null);
   const [isMounted, setIsMounted] = useState(false);
