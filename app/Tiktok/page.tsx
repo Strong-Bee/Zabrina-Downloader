@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -33,13 +33,7 @@ export default function TiktokPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [error, setError] = useState("");
-  const [downloading, setDownloading] = useState(null);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
+  const [downloading, setDownloading] = useState<string | null>(null);
   const validateTiktokUrl = (url) => {
     const patterns = [
       /(?:tiktok\.com\/@)([\w.-]+)\/video\/(\d+)/,
@@ -148,10 +142,6 @@ export default function TiktokPage() {
       setDownloading(null);
     }
   };
-
-  if (!isMounted) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800">
