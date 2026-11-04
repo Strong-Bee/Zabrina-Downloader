@@ -90,15 +90,17 @@ export default function YoutubePage() {
       // Tampilkan pesan error yang lebih user-friendly
       let errorMessage = "Terjadi kesalahan saat memproses video";
 
-      const message = err instanceof Error ? err.message : "";\n\n      if (message.includes("Invalid URL")) {
+      const message = err instanceof Error ? err.message : "";
+
+      if (message.includes("Invalid URL")) {
         errorMessage = "URL YouTube tidak valid. Pastikan URL benar.";
       } else if (message.includes("404")) {
         errorMessage =
           "Video tidak ditemukan. Mungkin video telah dihapus atau di-private.";
       } else if (message.includes("network")) {
         errorMessage = "Koneksi internet bermasalah. Periksa koneksi Anda.";
-      } else if (err.message) {
-        errorMessage = err.message;
+      } else if (message) {
+        errorMessage = message;
       }
 
       setError(errorMessage);
