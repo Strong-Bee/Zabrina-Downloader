@@ -69,7 +69,7 @@ export default function YoutubePage() {
         body: JSON.stringify({ url }),
       });
 
-      const data = await readApiResponse(response);
+      const data = await readApiResponse<VideoInfo>(response);
 
       if (!response.ok) {
         throw new Error(data.error || `HTTP error! status: ${response.status}`);
@@ -114,7 +114,7 @@ export default function YoutubePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url, quality }),
       });
-      const data = await readApiResponse(response);
+      const data = await readApiResponse<VideoInfo>(response);
       if (!response.ok || !data.downloadUrl) {
         throw new Error(data.error || `Unduhan ${label} tidak tersedia.`);
       }
