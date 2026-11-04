@@ -1,45 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
+import { readPlatformUrl } from "@/lib/platform-url";
+import { callMediaService } from "@/lib/media-service";
 
-export async function POST(request: NextRequest) {
-  try {
-    const { url } = await request.json();
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-    if (!url) {
-      return NextResponse.json(
-        { error: 'URL tidak ditemukan' },
-        { status: 400 }
-      );
-    }
-
-    // Simulasi response untuk Instagram
-    const mockData = {
-      title: 'Instagram Post',
-      thumbnail: 'https://picsum.photos/600/600',
-      duration: '0:30',
-      likes: 25000,
-      comments: 1200,
-      type: 'video',
-      author: {
-        username: 'username_instagram',
-        fullName: 'User Instagram',
-        avatar: 'https://picsum.photos/40',
-      },
-      downloadLinks: {
-        hd: '#',
-        sd: '#',
-      },
-    };
-
-    return NextResponse.json({
-      success: true,
-      data: mockData,
-    });
-
-  } catch (error) {
-    console.error('Instagram API Error:', error);
+export async function POST(request: Request) {
+  const input = await readPlatformUrl(request, "instagram");
+  if ("error" in input) {
     return NextResponse.json(
-      { error: 'Terjadi kesalahan pada server' },
-      { status: 500 }
+      { success: false, error: input.error, code: "INVALID_URL" },
+      { status: 400 },
     );
   }
+
+  const result = await callMediaService("metadata", {
+    platform: "instagram",
+    url: input.url,
+  });
+  return NextResponse.json(result.body, { status: result.status });
 }
