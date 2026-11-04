@@ -1,63 +1,43 @@
 import { NextResponse } from "next/server";
 import { validatePlatformUrl } from "@/lib/platform-url";
+import { callMediaService } from "@/lib/media-service";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
-type DownloadRequest = {
-  url?: unknown;
-  quality?: unknown;
-};
-
-const ALLOWED_QUALITIES = ["hd", "sd", "low", "audio"] as const;
-
-function json(error: string, status: number, code?: string) {
-  return NextResponse.json(
-    { success: false, ...(code ? { code } : {}), error },
-    { status },
-  );
-}
-
-/**
- * YouTube oEmbed provides metadata only, not downloadable media URLs.
- * Direct extraction is intentionally unavailable in this route so the API
- * never returns a fabricated URL when the metadata fallback has no media.
- */
 export async function POST(request: Request) {
-  let body: DownloadRequest;
+  let body: { url?: unknown; quality?: unknown };
   try {
-    body = (await request.json()) as DownloadRequest;
+    body = (await request.json()) as { url?: unknown; quality?: unknown };
   } catch {
-    return json("Body request harus berupa JSON yang valid.", 400, "INVALID_JSON");
-  }
-
-  if (!body || typeof body !== "object") {
-    return json("Body request harus berupa objek JSON.", 400, "INVALID_BODY");
+    return NextResponse.json(
+      { success: false, code: "INVALID_JSON", error: "Body request harus berupa JSON yang valid." },
+      { status: 400 },
+    );
   }
 
   const url = validatePlatformUrl(body.url, "youtube");
   if (!url) {
-    return json("URL YouTube tidak valid atau host tidak didukung.", 400, "INVALID_URL");
+    return NextResponse.json(
+      { success: false, code: "INVALID_URL", error: "URL youtube tidak valid atau host tidak didukung." },
+      { status: 400 },
+    );
   }
 
-  if (
-    typeof body.quality !== "string" ||
-    !(ALLOWED_QUALITIES as readonly string[]).includes(body.quality)
-  ) {
-    return json("Pilihan kualitas tidak valid.", 400, "INVALID_QUALITY");
+  const requested = typeof body.quality === "string" ? body.quality : "";
+  const quality = ["hd", "sd", "low", "audio"].includes(requested) ? requested : null;
+  if (!quality) {
+    return NextResponse.json(
+      { success: false, code: "INVALID_QUALITY", error: "Pilihan kualitas unduhan tidak valid." },
+      { status: 400 },
+    );
   }
 
-  return NextResponse.json(
-    {
-      success: false,
-      code: "YOUTUBE_DOWNLOAD_UNAVAILABLE",
-      error:
-        "Metadata video tersedia, tetapi sumber metadata tidak menyediakan tautan media. Untuk video milik Anda, gunakan YouTube Studio atau Google Takeout.",
-      officialExport: {
-        youtubeStudio: "https://studio.youtube.com/",
-        googleTakeout: "https://takeout.google.com/",
-      },
-    },
-    { status: 501 },
-  );
+  const result = await callMediaService("download", {
+    platform: "youtube",
+    url,
+    quality,
+  });
+  return NextResponse.json(result.body, { status: result.status });
 }
