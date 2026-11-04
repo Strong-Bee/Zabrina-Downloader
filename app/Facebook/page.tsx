@@ -208,15 +208,15 @@ export default function FacebookPage() {
                     <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                       <span className="flex items-center gap-1">
                         <FiEye className="w-4 h-4" />
-                        {videoInfo.views?.toLocaleString() || "0"} views
+                        {videoInfo.views == null ? "N/A" : videoInfo.views.toLocaleString()} views
                       </span>
                       <span className="flex items-center gap-1">
                         <FaHeart className="w-4 h-4 text-red-500" />
-                        {videoInfo.likes?.toLocaleString() || "0"} likes
+                        {videoInfo.likes == null ? "N/A" : videoInfo.likes.toLocaleString()} likes
                       </span>
                       <span className="flex items-center gap-1">
                         <FaComment className="w-4 h-4 text-blue-500" />
-                        {videoInfo.comments?.toLocaleString() || "0"} comments
+                        {videoInfo.comments == null ? "N/A" : videoInfo.comments.toLocaleString()} comments
                       </span>
                     </div>
                   </div>
