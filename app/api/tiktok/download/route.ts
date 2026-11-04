@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createRequire } from "node:module";
-import { readPlatformUrl } from "@/lib/platform-url";
+import { validatePlatformUrl } from "@/lib/platform-url";
 
 export const runtime = "nodejs";
 
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: "Body request harus berupa JSON yang valid." }, { status: 400 });
   }
 
-  const url = (await import("@/lib/platform-url")).validatePlatformUrl(body.url, "tiktok");
+  const url = validatePlatformUrl(body.url, "tiktok");
   if (!url) {
     return NextResponse.json({ success: false, error: "URL TikTok tidak valid atau host tidak didukung." }, { status: 400 });
   }
