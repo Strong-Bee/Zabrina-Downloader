@@ -117,6 +117,13 @@ export default function YoutubePage() {
     }
   };
 
+  const qualityOptions = [
+    { label: "1080p (HD)", quality: "hd" },
+    { label: "720p (HD)", quality: "sd" },
+    { label: "480p (SD)", quality: "low" },
+    { label: "Audio (format asli)", quality: "audio", icon: FaMusic },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <Navbar />
