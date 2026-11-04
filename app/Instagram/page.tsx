@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { readApiResponse } from "@/lib/client-api";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -52,7 +53,7 @@ export default function InstagramPage() {
         body: JSON.stringify({ url }),
       });
 
-      const data = await response.json();
+      const data = await readApiResponse(response);
 
       if (!response.ok) {
         throw new Error(data.error || "Gagal mendapatkan media");
@@ -73,39 +74,20 @@ export default function InstagramPage() {
 
   const handleDownload = async () => {
     if (!mediaInfo) return;
-
     setDownloading(true);
-
     try {
       const response = await fetch("/api/instagram/download", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ url: url }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, quality: "hd" }),
       });
-
-      const data = await response.json();
-
-      if (response.ok && data.downloadUrl) {
-        window.open(data.downloadUrl, "_blank");
-      } else {
-        // Fallback
-        const downloadUrl =
-          mediaInfo.downloadLinks?.hd || mediaInfo.downloadLinks?.sd;
-        if (downloadUrl) {
-          window.open(downloadUrl, "_blank");
-        } else {
-          alert(
-            `Download ${mediaInfo.type === "video" ? "Video" : "Foto"} - Instagram`,
-          );
-        }
+      const data = await readApiResponse(response);
+      if (!response.ok || !data.downloadUrl) {
+        throw new Error(data.error || "Unduhan Instagram tidak tersedia.");
       }
+      window.location.assign(data.downloadUrl);
     } catch (err) {
-      console.error("Download error:", err);
-      alert(
-        `Download ${mediaInfo.type === "video" ? "Video" : "Foto"} - Instagram`,
-      );
+      setError(err instanceof Error ? err.message : "Gagal menyiapkan unduhan Instagram.");
     } finally {
       setDownloading(false);
     }
