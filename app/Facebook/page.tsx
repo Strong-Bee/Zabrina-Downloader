@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { readApiResponse } from "@/lib/client-api";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -52,7 +53,7 @@ export default function FacebookPage() {
         body: JSON.stringify({ url }),
       });
 
-      const data = await response.json();
+      const data = await readApiResponse(response);
 
       if (!response.ok) {
         throw new Error(data.error || "Gagal mendapatkan video");
@@ -73,36 +74,20 @@ export default function FacebookPage() {
 
   const handleDownload = async (quality: string, label: string) => {
     if (!videoInfo) return;
-
     setDownloading(quality);
-
     try {
       const response = await fetch("/api/facebook/download", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: url,
-          quality: quality,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, quality }),
       });
-
-      const data = await response.json();
-
-      if (response.ok && data.downloadUrl) {
-        window.open(data.downloadUrl, "_blank");
-      } else {
-        const downloadUrl = videoInfo.downloadLinks?.[quality];
-        if (downloadUrl) {
-          window.open(downloadUrl, "_blank");
-        } else {
-          alert(`Download ${label} - ${videoInfo.title}`);
-        }
+      const data = await readApiResponse(response);
+      if (!response.ok || !data.downloadUrl) {
+        throw new Error(data.error || `Unduhan ${label} tidak tersedia.`);
       }
+      window.location.assign(data.downloadUrl);
     } catch (err) {
-      console.error("Download error:", err);
-      alert(`Download ${label} - ${videoInfo.title}`);
+      setError(err instanceof Error ? err.message : "Gagal menyiapkan unduhan Facebook.");
     } finally {
       setDownloading(null);
     }
