@@ -1,17 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MdDownload } from "react-icons/md";
 import { FaGithub, FaTwitter, FaYoutube, FaInstagram } from "react-icons/fa";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   const footerLinks = {
     product: [
       { name: "Fitur", href: "#features" },
@@ -36,18 +30,6 @@ export default function Footer() {
     { icon: FaYoutube, href: "#", label: "YouTube" },
     { icon: FaInstagram, href: "#", label: "Instagram" },
   ];
-
-  if (!isMounted) {
-    return (
-      <footer className="mt-16 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center text-gray-500 dark:text-gray-400">
-            <p>© {currentYear} Zabrina Downloader. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
-    );
-  }
 
   return (
     <footer className="mt-16 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
