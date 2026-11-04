@@ -30,7 +30,7 @@ const donationOptions = [
 
 const configuredDonationOptions = donationOptions.filter((option): option is (typeof donationOptions)[number] & { href: string } => typeof option.href === "string" && option.href.length > 0);
 
-const qrisImage = process.env.NEXT_PUBLIC_DONATION_QRIS_IMAGE;
+const qrisImage = "/no_markReactNative-snapshot-image_1.png";
 
 export default function SupportPage() {
   return (
