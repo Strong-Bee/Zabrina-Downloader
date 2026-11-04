@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { readApiResponse } from "@/lib/client-api";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -69,7 +70,7 @@ export default function TiktokPage() {
         body: JSON.stringify({ url }),
       });
 
-      const data = await response.json();
+      const data = await readApiResponse(response);
 
       if (!response.ok) {
         throw new Error(data.error || `HTTP error! status: ${response.status}`);
@@ -106,38 +107,21 @@ export default function TiktokPage() {
 
   const handleDownload = async (type: string, label: string) => {
     if (!videoInfo) return;
-
     setDownloading(type);
-
     try {
       const response = await fetch("/api/tiktok/download", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: url,
-          type: type,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, type }),
       });
-
-      const data = await response.json();
-
-      if (response.ok && data.downloadUrl) {
-        window.open(data.downloadUrl, "_blank");
-      } else {
-        const downloadUrl = videoInfo.downloadLinks?.[type];
-        if (downloadUrl && downloadUrl !== "#") {
-          window.open(downloadUrl, "_blank");
-        } else {
-          alert(
-            `🎬 Download ${label} - ${videoInfo.title || "Video TikTok"}\n\nFitur download akan segera aktif.`,
-          );
-        }
+      const data = await readApiResponse(response);
+      if (!response.ok || !data.downloadUrl) {
+        throw new Error(data.error || `Unduhan ${label} tidak tersedia.`);
       }
+      window.location.assign(data.downloadUrl);
     } catch (err) {
-      console.error("Download error:", err);
-      alert(`⚠️ Gagal mendownload ${label}. Silakan coba lagi.`);
+      const message = err instanceof Error ? err.message : "Gagal menyiapkan unduhan.";
+      setError(message);
     } finally {
       setDownloading(null);
     }
@@ -161,8 +145,7 @@ export default function TiktokPage() {
               <span className="text-white"> Video</span>
             </h1>
             <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-              Download video TikTok tanpa watermark dengan kualitas HD. Cepat,
-              gratis, dan mudah.
+              Ambil informasi video TikTok publik dan unduh format media yang tersedia.
             </p>
           </div>
 
@@ -219,7 +202,7 @@ export default function TiktokPage() {
               </span>
               <span className="flex items-center gap-1">
                 <FaCheckCircle className="w-4 h-4 text-[#00f2ea]" />
-                Tanpa watermark
+                Unduh media publik
               </span>
               <span className="flex items-center gap-1">
                 <FaMusic className="w-4 h-4 text-[#ff0050]" />
@@ -338,7 +321,7 @@ export default function TiktokPage() {
                       ) : (
                         <>
                           <FaDownload className="w-5 h-5" />
-                          Download Video (Tanpa Watermark)
+                          Download Video
                         </>
                       )}
                     </button>
@@ -355,7 +338,7 @@ export default function TiktokPage() {
                       ) : (
                         <>
                           <FaMusic className="w-5 h-5" />
-                          Download Audio MP3
+                          Download Audio
                         </>
                       )}
                     </button>
