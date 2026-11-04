@@ -20,20 +20,40 @@ type VideoInfo = {
   title?: string;
   description?: string;
   thumbnail?: string;
-  duration?: string | number;
-  views?: number;
-  likes?: number;
-  comments?: number;
+  duration?: string | number | null;
+  views?: number | null;
+  likes?: number | null;
+  comments?: number | null;
   author?: { username?: string; nickname?: string; avatar?: string };
-  downloadLinks?: Record<string, string | null | undefined>;
 };
+
+type ApiResponse = {
+  success?: boolean;
+  error?: string;
+  data?: VideoInfo;
+};
+
+async function readApiResponse(response: Response): Promise<ApiResponse> {
+  const raw = await response.text();
+  try {
+    return JSON.parse(raw) as ApiResponse;
+  } catch {
+    const isHtml =
+      response.headers.get("content-type")?.includes("text/html") ||
+      raw.trimStart().startsWith("<");
+    throw new Error(
+      isHtml
+        ? `Server API mengembalikan halaman HTML (HTTP ${response.status}), bukan JSON. Layanan sedang bermasalah; silakan coba lagi.`
+        : `Respons API tidak valid (HTTP ${response.status}). Silakan coba lagi.`,
+    );
+  }
+}
 
 export default function TiktokPage() {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [error, setError] = useState("");
-  const [downloading, setDownloading] = useState<string | null>(null);
   const validateTiktokUrl = (url: string) => {
     const patterns = [
       /(?:tiktok\.com\/@)([\w.-]+)\/video\/(\d+)/,
@@ -69,7 +89,7 @@ export default function TiktokPage() {
         body: JSON.stringify({ url }),
       });
 
-      const data = await response.json();
+      const data = await readApiResponse(response);
 
       if (!response.ok) {
         throw new Error(data.error || `HTTP error! status: ${response.status}`);
@@ -104,45 +124,6 @@ export default function TiktokPage() {
     }
   };
 
-  const handleDownload = async (type: string, label: string) => {
-    if (!videoInfo) return;
-
-    setDownloading(type);
-
-    try {
-      const response = await fetch("/api/tiktok/download", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: url,
-          type: type,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.downloadUrl) {
-        window.open(data.downloadUrl, "_blank");
-      } else {
-        const downloadUrl = videoInfo.downloadLinks?.[type];
-        if (downloadUrl && downloadUrl !== "#") {
-          window.open(downloadUrl, "_blank");
-        } else {
-          alert(
-            `🎬 Download ${label} - ${videoInfo.title || "Video TikTok"}\n\nFitur download akan segera aktif.`,
-          );
-        }
-      }
-    } catch (err) {
-      console.error("Download error:", err);
-      alert(`⚠️ Gagal mendownload ${label}. Silakan coba lagi.`);
-    } finally {
-      setDownloading(null);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800">
       <Navbar />
@@ -161,8 +142,7 @@ export default function TiktokPage() {
               <span className="text-white"> Video</span>
             </h1>
             <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-              Download video TikTok tanpa watermark dengan kualitas HD. Cepat,
-              gratis, dan mudah.
+              Lihat informasi dasar dan thumbnail dari video TikTok publik.
             </p>
           </div>
 
@@ -219,11 +199,11 @@ export default function TiktokPage() {
               </span>
               <span className="flex items-center gap-1">
                 <FaCheckCircle className="w-4 h-4 text-[#00f2ea]" />
-                Tanpa watermark
+                Metadata publik
               </span>
               <span className="flex items-center gap-1">
                 <FaMusic className="w-4 h-4 text-[#ff0050]" />
-                Ekstrak audio
+                Thumbnail video
               </span>
             </div>
           </div>
@@ -318,47 +298,9 @@ export default function TiktokPage() {
                     </div>
                   </div>
 
-                  {/* Download Buttons */}
-                  <div className="mt-4 space-y-2">
-                    <button
-                      onClick={() =>
-                        handleDownload(
-                          "videoNoWatermark",
-                          "Video (Tanpa Watermark)",
-                        )
-                      }
-                      disabled={downloading === "videoNoWatermark"}
-                      className="w-full bg-gradient-to-r from-[#00f2ea] to-[#ff0050] text-white py-3 rounded-xl font-semibold hover:shadow-lg transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {downloading === "videoNoWatermark" ? (
-                        <>
-                          <FiLoader className="w-5 h-5 animate-spin" />
-                          Mengunduh...
-                        </>
-                      ) : (
-                        <>
-                          <FaDownload className="w-5 h-5" />
-                          Download Video (Tanpa Watermark)
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={() => handleDownload("audio", "Audio MP3")}
-                      disabled={downloading === "audio"}
-                      className="w-full bg-white/10 text-white py-3 rounded-xl font-semibold hover:bg-white/20 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {downloading === "audio" ? (
-                        <>
-                          <FiLoader className="w-5 h-5 animate-spin" />
-                          Mengunduh...
-                        </>
-                      ) : (
-                        <>
-                          <FaMusic className="w-5 h-5" />
-                          Download Audio MP3
-                        </>
-                      )}
-                    </button>
+                  <div className="mt-4 rounded-xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm text-amber-200">
+                    Metadata dan thumbnail tersedia melalui layanan oEmbed TikTok.
+                    Unduhan file video atau audio belum tersedia pada versi ini.
                   </div>
                 </div>
               </div>
@@ -371,27 +313,27 @@ export default function TiktokPage() {
               <div className="w-12 h-12 bg-[#00f2ea]/20 rounded-xl flex items-center justify-center mb-4">
                 <FaVideo className="w-6 h-6 text-[#00f2ea]" />
               </div>
-              <h3 className="font-semibold text-white mb-2">Tanpa Watermark</h3>
+              <h3 className="font-semibold text-white mb-2">Metadata Video</h3>
               <p className="text-sm text-gray-300">
-                Download video TikTok tanpa watermark atau logo apapun.
+                Tampilkan judul dan informasi kreator dari video TikTok publik.
               </p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-white/20 transition">
               <div className="w-12 h-12 bg-[#ff0050]/20 rounded-xl flex items-center justify-center mb-4">
                 <FaMusic className="w-6 h-6 text-[#ff0050]" />
               </div>
-              <h3 className="font-semibold text-white mb-2">Audio MP3</h3>
+              <h3 className="font-semibold text-white mb-2">Thumbnail</h3>
               <p className="text-sm text-gray-300">
-                Ekstrak audio dari video TikTok dan download sebagai MP3.
+                Lihat thumbnail yang disediakan oleh endpoint oEmbed TikTok.
               </p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-white/20 transition">
               <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center mb-4">
                 <FaShare className="w-6 h-6 text-green-400" />
               </div>
-              <h3 className="font-semibold text-white mb-2">Cepat & Gratis</h3>
+              <h3 className="font-semibold text-white mb-2">Video Publik</h3>
               <p className="text-sm text-gray-300">
-                Proses download super cepat dan gratis tanpa batasan.
+                Hanya metadata video publik yang dapat diakses melalui TikTok oEmbed.
               </p>
             </div>
           </div>
@@ -399,13 +341,13 @@ export default function TiktokPage() {
           {/* Tips */}
           <div className="mt-8 bg-blue-500/10 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20">
             <h4 className="font-semibold text-blue-400 mb-2">
-              💡 Tips Download TikTok
+              💡 Tips Menggunakan TikTok Info
             </h4>
             <ul className="text-sm text-blue-300 space-y-1">
-              <li>• Salin URL dari video TikTok yang ingin di download</li>
-              <li>• Pilih kualitas video atau audio sesuai kebutuhan</li>
-              <li>• Video akan terdownload tanpa watermark</li>
-              <li>• Pastikan video tidak di-private atau dihapus</li>
+              <li>• Salin tautan video TikTok yang bersifat publik</li>
+              <li>• Tempel tautan lengkap, lalu pilih Cari Video</li>
+              <li>• Halaman menampilkan metadata dan thumbnail yang tersedia</li>
+              <li>• Fitur unduh file media belum tersedia</li>
             </ul>
           </div>
         </div>
