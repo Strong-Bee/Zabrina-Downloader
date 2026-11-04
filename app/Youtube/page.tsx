@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -29,13 +29,7 @@ export default function YoutubePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [error, setError] = useState("");
-  const [downloading, setDownloading] = useState(null);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
+  const [downloading, setDownloading] = useState<string | null>(null);
   // Validasi URL YouTube (Ditambahkan dukungan untuk YouTube Shorts)
   const validateYoutubeUrl = (url) => {
     const patterns = [
@@ -157,10 +151,6 @@ export default function YoutubePage() {
     { label: "480p (SD)", size: "15 MB", quality: "low" },
     { label: "Audio MP3", size: "5 MB", quality: "audio", icon: FaMusic },
   ];
-
-  if (!isMounted) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
