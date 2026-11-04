@@ -16,10 +16,11 @@ import { FiClock, FiEye, FiThumbsUp, FiLoader } from "react-icons/fi";
 type VideoInfo = {
   title?: string;
   thumbnail?: string;
-  duration?: string | number;
-  views?: number;
-  likes?: number;
+  duration?: string | number | null;
+  views?: number | null;
+  likes?: number | null;
   channelName?: string;
+  metadataSource?: "ytdl" | "oembed";
   description?: string;
   downloadLinks?: Record<string, string | null | undefined>;
 };
@@ -126,16 +127,7 @@ export default function YoutubePage() {
         // Buka link download di tab baru
         window.open(data.downloadUrl, "_blank");
       } else {
-        // Fallback: gunakan link yang sudah ada atau simulasi download
-        const downloadUrl = videoInfo.downloadLinks?.[quality];
-        if (downloadUrl && downloadUrl !== "#") {
-          window.open(downloadUrl, "_blank");
-        } else {
-          // Simulasi download untuk demo
-          alert(
-            `🎬 Download ${label} - ${videoInfo.title}\n\nFitur download akan segera aktif.`,
-          );
-        }
+        alert(data.error || `Gagal menyiapkan unduhan ${label}. Silakan coba lagi.`);
       }
     } catch (err) {
       console.error("Download error:", err);
@@ -144,6 +136,8 @@ export default function YoutubePage() {
       setDownloading(null);
     }
   };
+
+  const canPrepareDownload = videoInfo?.metadataSource !== "oembed";
 
   const qualityOptions = [
     { label: "1080p (HD)", size: "45 MB", quality: "hd" },
@@ -266,7 +260,7 @@ export default function YoutubePage() {
                     </div>
                   </div>
                   <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                    {videoInfo.duration || "0:00"}
+                    {videoInfo.duration || "Tidak tersedia"}
                   </div>
                 </div>
                 <div className="p-6 flex flex-col justify-between">
@@ -277,11 +271,11 @@ export default function YoutubePage() {
                     <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                       <span className="flex items-center gap-1">
                         <FiEye className="w-4 h-4" />
-                        {videoInfo.views?.toLocaleString() || "0"} views
+                        {videoInfo.views == null ? "N/A" : videoInfo.views.toLocaleString()} views
                       </span>
                       <span className="flex items-center gap-1">
                         <FiThumbsUp className="w-4 h-4" />
-                        {videoInfo.likes?.toLocaleString() || "0"} likes
+                        {videoInfo.likes == null ? "N/A" : videoInfo.likes.toLocaleString()} likes
                       </span>
                       <span className="flex items-center gap-1">
                         <FaYoutube className="w-4 h-4 text-red-500" />
@@ -302,7 +296,7 @@ export default function YoutubePage() {
                           onClick={() =>
                             handleDownload(quality.quality, quality.label)
                           }
-                          disabled={downloading === quality.quality}
+                          disabled={downloading === quality.quality || !canPrepareDownload}
                           className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {downloading === quality.quality ? (
@@ -315,14 +309,16 @@ export default function YoutubePage() {
                               <span className="font-medium">
                                 {quality.label}
                               </span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {quality.size}
-                              </span>
                             </>
                           )}
                         </button>
                       ))}
                     </div>
+                    {videoInfo.metadataSource === "oembed" && (
+                      <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">
+                        Metadata dasar berhasil dimuat, tetapi sumber cadangan tidak menyediakan tautan media. Tombol unduhan dinonaktifkan agar tidak menampilkan proses unduhan palsu. Untuk video milik Anda, gunakan file asli atau ekspor melalui YouTube Studio/Google Takeout.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
