@@ -134,10 +134,10 @@ export default function TiktokPage() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-3 bg-white/10 text-white px-4 py-2 rounded-full text-sm font-medium mb-4 backdrop-blur-sm border border-white/10">
               <FaTiktok className="w-5 h-5" />
-              <span>TikTok Downloader</span>
+              <span>TikTok Video Info</span>
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold mb-4">
-              <span className="text-white">Download</span>
+              <span className="text-white">Info</span>
               <span className="text-[#00f2ea]"> TikTok</span>
               <span className="text-white"> Video</span>
             </h1>
@@ -195,7 +195,7 @@ export default function TiktokPage() {
             <div className="flex flex-wrap gap-4 mt-4 text-sm text-gray-400">
               <span className="flex items-center gap-1">
                 <FiClock className="w-4 h-4" />
-                Support semua video
+                Video publik
               </span>
               <span className="flex items-center gap-1">
                 <FaCheckCircle className="w-4 h-4 text-[#00f2ea]" />
