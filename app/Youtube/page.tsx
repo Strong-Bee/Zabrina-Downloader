@@ -29,7 +29,6 @@ export default function YoutubePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [error, setError] = useState("");
-  const [downloading, setDownloading] = useState<string | null>(null);
   // Validasi URL YouTube (Ditambahkan dukungan untuk YouTube Shorts)
   const validateYoutubeUrl = (url: string) => {
     const patterns = [
@@ -103,55 +102,6 @@ export default function YoutubePage() {
     }
   };
 
-  const handleDownload = async (quality: string, label: string) => {
-    if (!videoInfo) return;
-
-    setDownloading(quality);
-
-    try {
-      const response = await fetch("/api/youtube/download", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: url,
-          quality: quality,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.downloadUrl) {
-        // Buka link download di tab baru
-        window.open(data.downloadUrl, "_blank");
-      } else {
-        // Fallback: gunakan link yang sudah ada atau simulasi download
-        const downloadUrl = videoInfo.downloadLinks?.[quality];
-        if (downloadUrl && downloadUrl !== "#") {
-          window.open(downloadUrl, "_blank");
-        } else {
-          // Simulasi download untuk demo
-          alert(
-            `🎬 Download ${label} - ${videoInfo.title}\n\nFitur download akan segera aktif.`,
-          );
-        }
-      }
-    } catch (err) {
-      console.error("Download error:", err);
-      alert(`⚠️ Gagal mendownload ${label}. Silakan coba lagi.`);
-    } finally {
-      setDownloading(null);
-    }
-  };
-
-  const qualityOptions = [
-    { label: "1080p (HD)", size: "45 MB", quality: "hd" },
-    { label: "720p (HD)", size: "25 MB", quality: "sd" },
-    { label: "480p (SD)", size: "15 MB", quality: "low" },
-    { label: "Audio MP3", size: "5 MB", quality: "audio", icon: FaMusic },
-  ];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <Navbar />
@@ -172,8 +122,7 @@ export default function YoutubePage() {
               </span>
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Download video dan audio dari YouTube dengan kualitas terbaik.
-              Support 1080p, 720p, dan MP3.
+              Lihat informasi video publik. Untuk mengunduh video milik Anda sendiri, gunakan ekspor resmi YouTube.
             </p>
           </div>
 
@@ -290,38 +239,24 @@ export default function YoutubePage() {
                     </div>
                   </div>
 
-                  {/* Quality Options */}
-                  <div className="mt-4">
-                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Pilih Kualitas:
+                  {/* Download availability */}
+                  <div className="mt-5 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-4">
+                    <h4 className="font-semibold text-amber-900 dark:text-amber-300 mb-2">
+                      Unduhan langsung belum tersedia
                     </h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {qualityOptions.map((quality, index) => (
-                        <button
-                          key={index}
-                          onClick={() =>
-                            handleDownload(quality.quality, quality.label)
-                          }
-                          disabled={downloading === quality.quality}
-                          className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {downloading === quality.quality ? (
-                            <FiLoader className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <>
-                              {quality.icon && (
-                                <quality.icon className="w-4 h-4" />
-                              )}
-                              <span className="font-medium">
-                                {quality.label}
-                              </span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {quality.size}
-                              </span>
-                            </>
-                          )}
-                        </button>
-                      ))}
+                    <p className="text-sm text-amber-800 dark:text-amber-200">
+                      Metadata dasar berhasil dimuat, tetapi sumber cadangan tidak menyediakan tautan media. Tombol unduhan dinonaktifkan agar tidak menampilkan proses unduhan palsu.
+                    </p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-3">
+                      Untuk video yang Anda miliki, gunakan salah satu layanan ekspor resmi:
+                    </p>
+                    <div className="flex flex-wrap gap-3 mt-3">
+                      <a href="https://studio.youtube.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700">
+                        Buka YouTube Studio
+                      </a>
+                      <a href="https://takeout.google.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm font-semibold text-gray-800 dark:text-gray-100 hover:bg-white dark:hover:bg-gray-700">
+                        Google Takeout
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -339,7 +274,7 @@ export default function YoutubePage() {
                 HD Quality
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Download video YouTube dalam kualitas 1080p, 720p, dan 480p.
+                Lihat metadata dan thumbnail video publik yang tersedia melalui sumber resmi.
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition">
@@ -350,7 +285,7 @@ export default function YoutubePage() {
                 Audio MP3
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Ekstrak audio dari video YouTube dan download dalam format MP3.
+                Ekspor audio atau video milik Anda melalui alat resmi yang disediakan YouTube.
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition">
@@ -361,7 +296,7 @@ export default function YoutubePage() {
                 Tanpa Watermark
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Download video tanpa watermark atau logo apapun. Hasil bersih.
+                Aplikasi tidak membuat tautan unduhan atau hasil unduhan yang tidak benar-benar tersedia.
               </p>
             </div>
           </div>
