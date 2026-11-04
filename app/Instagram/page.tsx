@@ -20,9 +20,9 @@ type MediaInfo = {
   title?: string;
   thumbnail?: string;
   type?: string;
-  duration?: string | number;
-  likes?: number;
-  comments?: number;
+  duration?: string | number | null;
+  likes?: number | null;
+  comments?: number | null;
   author?: { username?: string; fullName?: string; avatar?: string };
   downloadLinks?: Record<string, string | null | undefined>;
 };
@@ -112,7 +112,7 @@ export default function InstagramPage() {
               <span className="text-gray-800 dark:text-white"> Content</span>
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Download video, foto, dan reels dari Instagram dengan mudah dan
+              Ambil informasi dan unduh media publik Instagram yang tersedia. Dengan
               cepat.
             </p>
           </div>
@@ -198,7 +198,7 @@ export default function InstagramPage() {
                         </div>
                       </div>
                       <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                        {mediaInfo.duration || "0:30"}
+                        {mediaInfo.duration == null ? "Durasi tidak tersedia" : mediaInfo.duration}
                       </div>
                     </>
                   )}
