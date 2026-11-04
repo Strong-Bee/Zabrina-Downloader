@@ -103,7 +103,7 @@ export default function YoutubePage() {
     }
   };
 
-  const handleDownload = async (quality, label) => {
+  const handleDownload = async (quality: string, label: string) => {
     if (!videoInfo) return;
 
     setDownloading(quality);
