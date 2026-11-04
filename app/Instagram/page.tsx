@@ -309,7 +309,7 @@ export default function InstagramPage() {
                 Cepat & Mudah
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Proses download cepat dengan interface yang user-friendly.
+                Pemrosesan dilakukan untuk tautan publik yang didukung.
               </p>
             </div>
           </div>
