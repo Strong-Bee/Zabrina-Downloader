@@ -316,7 +316,7 @@ export default function YoutubePage() {
                     </div>
                     {videoInfo.metadataSource === "oembed" && (
                       <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">
-                        Metadata dasar berhasil dimuat. Statistik dan tautan unduhan belum tersedia dari sumber cadangan.
+                        Metadata dasar berhasil dimuat, tetapi sumber cadangan tidak menyediakan tautan media. Tombol unduhan dinonaktifkan agar tidak menampilkan proses unduhan palsu. Untuk video milik Anda, gunakan file asli atau ekspor melalui YouTube Studio/Google Takeout.
                       </p>
                     )}
                   </div>
