@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { readApiResponse } from "@/lib/client-api";
+import { validatePlatformUrl } from "@/lib/platform-url";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -21,7 +22,7 @@ type VideoInfo = {
   views?: number | null;
   likes?: number | null;
   channelName?: string;
-  metadataSource?: "ytdl" | "oembed";
+  metadataSource?: "yt-dlp" | "ytdl" | "oembed";
   description?: string;
   downloadLinks?: Record<string, string | null | undefined>;
 };
@@ -32,17 +33,7 @@ export default function YoutubePage() {
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState<string | null>(null);
-  // Validasi URL YouTube (Ditambahkan dukungan untuk YouTube Shorts)
-  const validateYoutubeUrl = (url: string) => {
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=)([\w-]+)/,
-      /(?:youtu\.be\/)([\w-]+)/,
-      /(?:youtube\.com\/embed\/)([\w-]+)/,
-      /(?:youtube\.com\/v\/)([\w-]+)/,
-      /(?:youtube\.com\/shorts\/)([\w-]+)/, // Tambahan: support YouTube Shorts
-    ];
-    return patterns.some((pattern) => pattern.test(url));
-  };
+
 
   const handleFetchVideo = async () => {
     if (!url) {
@@ -51,7 +42,7 @@ export default function YoutubePage() {
     }
 
     // Validasi URL
-    if (!validateYoutubeUrl(url)) {
+    if (!validatePlatformUrl(url, "youtube")) {
       setError("URL YouTube tidak valid. Pastikan URL benar.");
       return;
     }
@@ -207,7 +198,7 @@ export default function YoutubePage() {
               </span>
               <span className="flex items-center gap-1">
                 <FaMusic className="w-4 h-4 text-purple-500" />
-                Ekstrak audio MP3
+                Audio (format asli)
               </span>
             </div>
           </div>
@@ -325,7 +316,7 @@ export default function YoutubePage() {
                 Audio (format asli)
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Ekstrak audio dari video YouTube dan download dalam format MP3.
+                Unduh audio dalam format sumber yang tersedia.
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition">
@@ -353,7 +344,7 @@ export default function YoutubePage() {
               </li>
               <li>• Pilih kualitas sesuai kebutuhan untuk menghemat kuota</li>
               <li>
-                • Gunakan fitur audio MP3 untuk mendengarkan musik offline
+                • Audio mengikuti format yang tersedia dari sumber
               </li>
               <li>• Video dengan hak cipta mungkin tidak bisa di download</li>
             </ul>
