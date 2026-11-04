@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const requested = typeof body.quality === "string" ? body.quality : "";
+  const requested = typeof body.quality === "string" ? body.quality : "hd";
   const quality = ["hd", "sd", "low", "audio"].includes(requested) ? requested : null;
   if (!quality) {
     return NextResponse.json(
