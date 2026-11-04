@@ -1,114 +1,126 @@
 import { NextResponse } from "next/server";
-import ytdl from "ytdl-core";
 import { validatePlatformUrl } from "@/lib/platform-url";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-type YoutubeMetadata = {
-  title: string;
-  thumbnail: string;
-  duration: string | null;
-  views: number | null;
-  likes: number | null;
-  channelName: string;
-  description: string;
-  downloadLinks: { hd: string | null; sd: string | null; audio: string | null };
-  metadataSource: "ytdl" | "oembed";
+type YoutubeOEmbed = {
+  title?: string;
+  author_name?: string;
+  thumbnail_url?: string;
 };
 
-async function extractWithYtdl(url: string): Promise<YoutubeMetadata> {
-  const info = await ytdl.getInfo(url);
-  const details = info.videoDetails;
-  const progressive = ytdl.filterFormats(info.formats, "videoandaudio");
-  const audio = ytdl.filterFormats(info.formats, "audioonly");
-  const seconds = Number(details.lengthSeconds) || 0;
-
-  return {
-    title: details.title || "Video YouTube",
-    thumbnail: details.thumbnails?.at(-1)?.url || "",
-    duration: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`,
-    views: Number(details.viewCount) || 0,
-    likes: Number(details.likes) || 0,
-    channelName: details.author?.name || "Unknown Channel",
-    description: details.description || "",
-    downloadLinks: {
-      hd: progressive.find((format) => format.qualityLabel === "720p")?.url || progressive[0]?.url || null,
-      sd: progressive.find((format) => format.qualityLabel === "480p" || format.qualityLabel === "360p")?.url || null,
-      audio: audio[0]?.url || null,
-    },
-    metadataSource: "ytdl",
-  };
+class HttpError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "HttpError";
+    this.status = status;
+  }
 }
 
-async function extractWithOembed(url: string): Promise<YoutubeMetadata> {
+const INVALID_URL_MESSAGE = "URL YouTube tidak valid atau host tidak didukung.";
+
+function getYoutubeVideoId(input: string): string | null {
+  try {
+    const url = new URL(input);
+    const host = url.hostname.toLowerCase();
+    let id: string | null = null;
+
+    if (host === "youtu.be" || host === "www.youtu.be") {
+      id = url.pathname.split("/").filter(Boolean)[0] ?? null;
+    } else if (host === "youtube.com" || host.endsWith(".youtube.com")) {
+      if (url.pathname === "/watch") {
+        id = url.searchParams.get("v");
+      } else if (/^\/(embed|shorts|live|v)\//.test(url.pathname)) {
+        id = url.pathname.split("/").filter(Boolean)[1] ?? null;
+      }
+    }
+
+    return id && /^[\w-]{11}$/.test(id) ? id : null;
+  } catch {
+    return null;
+  }
+}
+
+async function extractYoutubeData(url: string) {
+  const videoId = getYoutubeVideoId(url);
+  if (!videoId) throw new HttpError("ID video YouTube tidak dapat dibaca.", 400);
+
+  // oEmbed publik dipakai untuk metadata (menghindari alur ytdl-core yang bisa gagal HTTP 410).
   const endpoint = new URL("https://www.youtube.com/oembed");
-  endpoint.searchParams.set("url", url);
+  endpoint.searchParams.set("url", `https://www.youtube.com/watch?v=${videoId}`);
   endpoint.searchParams.set("format", "json");
 
-  const response = await fetch(endpoint, {
-    headers: { Accept: "application/json" },
-    signal: AbortSignal.timeout(10000),
-    cache: "no-store",
-  });
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(10_000),
+      cache: "no-store",
+    });
+  } catch (error) {
+    if (error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError")) {
+      throw new HttpError("Permintaan ke YouTube melebihi batas waktu.", 504);
+    }
+    throw new HttpError("Gagal menghubungi YouTube.", 502);
+  }
 
   if (!response.ok) {
-    throw new Error(`YouTube oEmbed returned HTTP ${response.status}`);
+    if (response.status === 404 || response.status === 401) {
+      throw new HttpError(
+        "Video tidak tersedia untuk metadata publik (mungkin privat, dihapus, atau dibatasi).",
+        404,
+      );
+    }
+    if (response.status === 403) {
+      throw new HttpError("Pemilik video tidak mengizinkan metadata/embed publik.", 403);
+    }
+    throw new HttpError(`YouTube oEmbed merespons HTTP ${response.status}.`, 502);
   }
 
-  const data: unknown = await response.json();
-  if (!data || typeof data !== "object" || !("title" in data) || typeof data.title !== "string") {
-    throw new Error("YouTube oEmbed returned an invalid response");
+  let metadata: YoutubeOEmbed;
+  try {
+    metadata = (await response.json()) as YoutubeOEmbed;
+  } catch {
+    throw new HttpError("Respons YouTube bukan JSON yang valid.", 502);
   }
 
-  const metadata = data as {
-    title: string;
-    author_name?: string;
-    thumbnail_url?: string;
-  };
+  if (!metadata.title) {
+    throw new HttpError("YouTube tidak mengembalikan metadata video.", 502);
+  }
 
   return {
     title: metadata.title,
-    thumbnail: metadata.thumbnail_url || "",
+    thumbnail: metadata.thumbnail_url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
     duration: null,
     views: null,
     likes: null,
     channelName: metadata.author_name || "Unknown Channel",
     description: "",
     downloadLinks: { hd: null, sd: null, audio: null },
-    metadataSource: "oembed",
+    metadataSource: "YouTube oEmbed",
   };
 }
 
-async function extractYoutubeData(input: unknown): Promise<YoutubeMetadata> {
+async function handleMetadata(input: unknown) {
+  // Validasi sekali saja di sini.
   const url = validatePlatformUrl(input, "youtube");
-  if (!url || !ytdl.validateURL(url)) {
-    throw new Error("URL YouTube tidak valid atau host tidak didukung.");
+  if (!url) {
+    return NextResponse.json({ success: false, error: INVALID_URL_MESSAGE }, { status: 400 });
   }
 
   try {
-    return await extractWithYtdl(url);
-  } catch (primaryError) {
-    console.warn("ytdl-core metadata extraction failed; trying YouTube oEmbed:", primaryError);
-    return extractWithOembed(url);
-  }
-}
-
-async function handleRequest(input: unknown) {
-  if (!validatePlatformUrl(input, "youtube")) {
-    return NextResponse.json(
-      { success: false, error: "URL YouTube tidak valid atau host tidak didukung." },
-      { status: 400 },
-    );
-  }
-
-  try {
-    const data = await extractYoutubeData(input);
+    const data = await extractYoutubeData(url);
     return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error("YouTube metadata error:", error);
+    if (error instanceof HttpError) {
+      return NextResponse.json({ success: false, error: error.message }, { status: error.status });
+    }
     return NextResponse.json(
-      { success: false, error: "Metadata YouTube tidak dapat diambil. Video mungkin privat, dibatasi usia, tidak tersedia, atau akses server sedang dibatasi YouTube." },
-      { status: 502 },
+      { success: false, error: "Terjadi kesalahan saat mengambil metadata." },
+      { status: 500 },
     );
   }
 }
@@ -124,14 +136,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const input = body && typeof body === "object" && "url" in body
-    ? (body as { url?: unknown }).url
-    : null;
+  const input =
+    body && typeof body === "object" && "url" in body ? (body as { url?: unknown }).url : null;
 
-  return handleRequest(input);
+  return handleMetadata(input);
 }
 
 export async function GET(request: Request) {
   const input = new URL(request.url).searchParams.get("url");
-  return handleRequest(input);
+  return handleMetadata(input);
 }
