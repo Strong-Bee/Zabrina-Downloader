@@ -20,10 +20,10 @@ type VideoInfo = {
   title?: string;
   description?: string;
   thumbnail?: string;
-  duration?: string | number;
-  views?: number;
-  likes?: number;
-  comments?: number;
+  duration?: string | number | null;
+  views?: number | null;
+  likes?: number | null;
+  comments?: number | null;
   downloadLinks?: Record<string, string | null | undefined>;
 };
 
@@ -111,7 +111,7 @@ export default function FacebookPage() {
               <span className="text-blue-600"> Video</span>
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Download video dari Facebook dengan kualitas HD. Support video
+              Ambil informasi dan unduh video Facebook publik dengan format yang tersedia.
               public dan private.
             </p>
           </div>
@@ -195,7 +195,7 @@ export default function FacebookPage() {
                     </div>
                   </div>
                   <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                    {videoInfo.duration || "0:00"}
+                    {videoInfo.duration == null ? "Durasi tidak tersedia" : videoInfo.duration}
                   </div>
                 </div>
                 <div className="p-6 flex flex-col justify-between">
