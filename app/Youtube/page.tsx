@@ -112,10 +112,10 @@ export default function YoutubePage() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-3 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-4 py-2 rounded-full text-sm font-medium mb-4">
               <FaYoutube className="w-5 h-5" />
-              <span>YouTube Downloader</span>
+              <span>YouTube Video Info</span>
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold mb-4">
-              <span className="text-red-600">Download</span>
+              <span className="text-red-600">Info</span>
               <span className="text-gray-800 dark:text-white">
                 {" "}
                 Video YouTube
@@ -282,7 +282,7 @@ export default function YoutubePage() {
                 <FaMusic className="w-6 h-6 text-purple-600" />
               </div>
               <h3 className="font-semibold text-gray-800 dark:text-white mb-2">
-                Audio MP3
+                Ekspor Resmi
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Ekspor audio atau video milik Anda melalui alat resmi yang disediakan YouTube.
@@ -293,7 +293,7 @@ export default function YoutubePage() {
                 <FaCheckCircle className="w-6 h-6 text-green-600" />
               </div>
               <h3 className="font-semibold text-gray-800 dark:text-white mb-2">
-                Tanpa Watermark
+                Aman & Transparan
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Aplikasi tidak membuat tautan unduhan atau hasil unduhan yang tidak benar-benar tersedia.
@@ -308,7 +308,7 @@ export default function YoutubePage() {
             </h4>
             <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
               <li>
-                • Pastikan URL YouTube valid (contoh:
+                • Tempel URL YouTube publik yang valid (contoh:
                 https://youtube.com/watch?v=...)
               </li>
               <li>• Metadata oEmbed tidak menyediakan durasi, statistik, atau file media.</li>
