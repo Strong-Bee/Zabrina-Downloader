@@ -26,7 +26,9 @@ const donationOptions = [
     icon: FaCoffee,
     accent: "from-yellow-500 to-orange-500",
   },
-].filter((option) => Boolean(option.href));
+];
+
+const configuredDonationOptions = donationOptions.filter((option): option is (typeof donationOptions)[number] & { href: string } => typeof option.href === "string" && option.href.length > 0);
 
 const qrisImage = process.env.NEXT_PUBLIC_DONATION_QRIS_IMAGE;
 
@@ -55,9 +57,9 @@ export default function SupportPage() {
               Gunakan salah satu metode yang tersedia di bawah ini.
             </p>
 
-            {donationOptions.length > 0 ? (
+            {configuredDonationOptions.length > 0 ? (
               <div className="grid gap-4 sm:grid-cols-2">
-                {donationOptions.map((option) => (
+                {configuredDonationOptions.map((option) => (
                   <a
                     key={option.name}
                     href={option.href}
