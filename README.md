@@ -1,21 +1,73 @@
 # Zabrina Downloader
 
-Aplikasi Next.js untuk mengambil metadata dari URL publik yang didukung dan menampilkan opsi dukungan sukarela.
+Aplikasi Next.js untuk memproses tautan media publik dari TikTok, Instagram, Facebook, dan YouTube.
 
-## Status platform
+## Arsitektur platform
 
-| Platform | Status API | Catatan |
+Empat platform menggunakan satu backend pemrosesan media berbasis yt-dlp yang dijalankan terpisah dari Next.js. Pemisahan ini diperlukan karena ekstraksi media membutuhkan proses dan waktu yang tidak cocok dijalankan langsung di fungsi serverless Vercel.
+
+| Platform | Metadata | Unduhan |
 | --- | --- | --- |
-| YouTube | Metadata tersedia via oEmbed | Durasi, views, likes, dan unduhan belum disediakan oleh oEmbed. |
-| TikTok | Eksperimental | Menggunakan `@mrnima/tiktok-downloader`; hanya URL publik yang didukung library. |
-| Instagram | Belum tersedia | Endpoint mengembalikan HTTP 501 sampai adapter resmi/tepercaya dikonfigurasi. |
-| Facebook | Belum tersedia | Endpoint mengembalikan HTTP 501 sampai adapter resmi/tepercaya dikonfigurasi. |
+| TikTok | Backend media service | Format video/audio yang tersedia |
+| Instagram | Backend media service | Foto/video publik yang didukung extractor |
+| Facebook | Backend media service | Video publik yang didukung extractor |
+| YouTube | Backend media service | Video/audio sesuai format yang tersedia |
 
-Aplikasi tidak mengklaim metadata atau tautan unduhan palsu sebagai hasil nyata. Gunakan hanya untuk konten yang Anda miliki atau yang memang Anda berhak unduh, dan patuhi ketentuan layanan setiap platform.
+**Batasan:** konten privat, konten yang memerlukan login/cookies, konten yang dihapus, dan format yang dibatasi platform tidak dijamin dapat diproses. Tautan CDN dari platform dapat kedaluwarsa; aplikasi meminta tautan baru saat pengguna mengunduh. Audio diunduh dalam format sumber yang tersedia, bukan dikonversi otomatis menjadi MP3.
+
+Gunakan layanan hanya untuk konten yang Anda miliki atau yang Anda berhak unduh. Patuhi ketentuan layanan, hak cipta, dan batasan akses dari setiap platform. Jangan gunakan cookies akun pribadi untuk melewati pembatasan akses.
+
+## Menjalankan Media Service di VPS
+
+Folder `media-service/` berisi service FastAPI + yt-dlp dalam Docker.
+
+1. Salin `media-service/.env.example` menjadi `media-service/.env`.
+2. Buat secret acak minimal 32 karakter:
+
+   ```bash
+   openssl rand -hex 32
+   ```
+
+3. Isi nilai `MEDIA_SERVICE_API_KEY` di `media-service/.env`.
+4. Jalankan service:
+
+   ```bash
+   cd media-service
+   docker compose up -d --build
+   docker compose logs -f
+   ```
+
+5. Service mendengarkan di `127.0.0.1:8000`. Letakkan di belakang reverse proxy HTTPS (misalnya Nginx) dan batasi akses langsung ke port aplikasi. Endpoint health check:
+
+   ```
+   https://media-api.example.com/health
+   ```
+
+Jangan membuka port service tanpa HTTPS dan jangan membagikan API key. Service mewajibkan header `X-API-Key`, memvalidasi host platform, dan hanya menerima URL HTTPS dari empat platform yang didukung.
+
+## Environment Variables Next.js / Vercel
+
+Tambahkan dua variabel berikut di Vercel Project Settings → Environment Variables, lalu redeploy:
+
+| Variable | Keterangan |
+| --- | --- |
+| `MEDIA_SERVICE_URL` | URL HTTPS reverse proxy ke media service, tanpa path `/v1` |
+| `MEDIA_SERVICE_API_KEY` | Secret yang sama dengan nilai di VPS |
+
+Contoh `.env.local`:
+
+```env
+MEDIA_SERVICE_URL=https://media-api.example.com
+MEDIA_SERVICE_API_KEY=isi-secret-yang-sama-dengan-vps
+```
+
+Kedua variabel ini hanya digunakan server-side dan tidak memakai prefix `NEXT_PUBLIC_`. Jangan pernah memasukkan API key ke frontend atau repository.
+
+Jika service belum dikonfigurasi atau tidak dapat dijangkau, API Next.js mengembalikan JSON error yang jelas (503/502), bukan halaman HTML yang kemudian gagal diparse sebagai JSON.
 
 ## Halaman Support / Donasi
 
-Halaman donasi tersedia di `/support` dan dapat diakses dari menu navigasi serta footer. Metode pembayaran dikonfigurasi melalui environment variables berikut:
+Halaman donasi tersedia di `/support` dan dapat diakses dari menu navigasi serta footer. Metode pembayaran dikonfigurasi melalui environment variables:
 
 | Variable | Keterangan |
 | --- | --- |
@@ -24,43 +76,20 @@ Halaman donasi tersedia di `/support` dan dapat diakses dari menu navigasi serta
 | `NEXT_PUBLIC_BUYMEACOFFEE_URL` | URL halaman Buy Me a Coffee |
 | `NEXT_PUBLIC_DONATION_QRIS_IMAGE` | URL gambar QRIS yang dikelola pemilik |
 
-Isi hanya metode yang benar-benar dimiliki dan sudah diverifikasi. Jika semua variabel kosong, halaman akan menampilkan pemberitahuan bahwa metode donasi belum dikonfigurasi. Setelah mengatur environment variables di Vercel, lakukan redeploy agar perubahan tampil.
-
-Contoh lokal di `.env.local`:
-
-```env
-NEXT_PUBLIC_SAWERIA_URL=
-NEXT_PUBLIC_TRAKTEER_URL=
-NEXT_PUBLIC_BUYMEACOFFEE_URL=
-NEXT_PUBLIC_DONATION_QRIS_IMAGE=
-```
-
-Jangan memasukkan nomor rekening, kredensial, PIN, atau OTP ke source code publik.
+Isi hanya metode yang benar-benar dimiliki dan sudah diverifikasi. Jika semua variabel kosong, halaman menampilkan pemberitahuan bahwa metode donasi belum dikonfigurasi.
 
 ## Teknologi
 
-- Next.js 16
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- React Icons
+- Next.js 16, React 19, TypeScript, Tailwind CSS 4
+- FastAPI + yt-dlp untuk pemrosesan media
+- Docker untuk deployment media service
 
-## Persyaratan
-
-- Node.js 22 atau versi LTS yang kompatibel
-- npm
-
-## Instalasi
+## Instalasi aplikasi web
 
 ```bash
 git clone https://github.com/Strong-Bee/Zabrina-Downloader.git
 cd Zabrina-Downloader
 npm ci
-```
-
-## Menjalankan aplikasi
-
-```bash
 npm run dev
 ```
 
@@ -74,27 +103,14 @@ npm run typecheck
 npm run build
 ```
 
-## API
+## API Next.js
 
 | Endpoint | Fungsi |
 | --- | --- |
-| `/api/youtube` | Mengambil metadata publik via YouTube oEmbed |
-| `/api/youtube/download` | Menyiapkan format unduhan YouTube (masih eksperimental) |
-| `/api/tiktok` | Mengambil metadata TikTok |
-| `/api/tiktok/download` | Menyiapkan tautan unduhan TikTok |
-| `/api/instagram` | Mengembalikan 501 sampai adapter tersedia |
-| `/api/instagram/download` | Mengembalikan 501 sampai adapter tersedia |
-| `/api/facebook` | Mengembalikan 501 sampai adapter tersedia |
-| `/api/facebook/download` | Mengembalikan 501 sampai adapter tersedia |
+| `POST /api/{platform}` | Mengambil metadata dari media service |
+| `POST /api/{platform}/download` | Meminta URL media untuk kualitas yang dipilih |
 
-Setiap endpoint memvalidasi host URL terhadap platform yang sesuai. URL ke host lain, protokol selain HTTP(S), kredensial URL, port khusus, dan input terlalu panjang ditolak.
-
-## Catatan operasional
-
-- Jalankan aplikasi di lingkungan Node.js; route downloader menggunakan dependensi Node.
-- Pasang rate limiting di reverse proxy atau platform hosting sebelum membuka API ke publik.
-- Jangan menambahkan cookie, token akun, atau kredensial platform ke repository.
-- Downloader pihak ketiga dapat berhenti bekerja ketika platform sumber mengubah API atau mekanisme aksesnya.
+Nilai `{platform}`: `tiktok`, `instagram`, `facebook`, atau `youtube`. Setiap endpoint memvalidasi host dan protokol sebelum meneruskan permintaan.
 
 ## Lisensi
 
