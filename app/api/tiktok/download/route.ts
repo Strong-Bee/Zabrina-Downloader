@@ -5,8 +5,9 @@ import { validatePlatformUrl } from "@/lib/platform-url";
 export const runtime = "nodejs";
 
 const require = createRequire(import.meta.url);
+type TikTokResult = { status?: boolean; result?: Record<string, unknown> };
 const { tiktokdl } = require("@mrnima/tiktok-downloader") as {
-  tiktokdl: (url: string) => Promise<any>;
+  tiktokdl: (url: string) => Promise<TikTokResult>;
 };
 
 export async function POST(request: Request) {
@@ -33,17 +34,18 @@ export async function POST(request: Request) {
     }
 
     const data = response.result;
-    const downloadUrl = body.type === "videoNoWatermark"
+    const candidate = body.type === "videoNoWatermark"
       ? data.nowm
       : body.type === "video"
         ? data.wm
         : data.music;
+    const downloadUrl = typeof candidate === "string" ? candidate : null;
 
-    if (typeof downloadUrl !== "string" || !downloadUrl.startsWith("https://")) {
+    if (!downloadUrl || !downloadUrl.startsWith("https://")) {
       return NextResponse.json({ success: false, error: "Link unduhan tidak tersedia." }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, downloadUrl, title: data.title || "TikTok Video" });
+    return NextResponse.json({ success: true, downloadUrl, title: typeof data.title === "string" ? data.title : "TikTok Video" });
   } catch (error) {
     console.error("TikTok download error:", error);
     return NextResponse.json({ success: false, error: "Gagal menyiapkan unduhan TikTok. Coba lagi." }, { status: 502 });
