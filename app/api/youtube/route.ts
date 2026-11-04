@@ -1,88 +1,71 @@
-import { NextRequest, NextResponse } from 'next/server';
-import ytdl from 'ytdl-core';
+import { NextResponse } from "next/server";
+import ytdl from "ytdl-core";
+import { validatePlatformUrl } from "@/lib/platform-url";
 
-// Helper function untuk menghindari duplikasi kode (DRY) dan mengekstrak link stream asli
-async function extractYoutubeData(url: string) {
-  if (!ytdl.validateURL(url)) {
-    throw new Error('URL YouTube tidak valid. Pastikan URL benar.');
+export const runtime = "nodejs";
+
+async function extractYoutubeData(input: unknown) {
+  const url = validatePlatformUrl(input, "youtube");
+  if (!url || !ytdl.validateURL(url)) {
+    throw new Error("URL YouTube tidak valid atau host tidak didukung.");
   }
 
-  // Ambil informasi lengkap video beserta daftar formatnya
   const info = await ytdl.getInfo(url);
-  const videoDetails = info.videoDetails;
-
-  // Filter format video yang menyatu dengan audio (progressive streams, biasanya maks 720p)
-  const progressiveFormats = ytdl.filterFormats(info.formats, 'videoandaudio');
-  // Filter format audio saja (untuk MP3)
-  const audioFormats = ytdl.filterFormats(info.formats, 'audioonly');
-
-  // Ambil URL stream langsung (Direct CDN Link) dari YouTube
-  const hdUrl = progressiveFormats.find(f => f.qualityLabel === '720p' || f.qualityLabel === '1080p')?.url 
-    || progressiveFormats[0]?.url 
-    || videoDetails.video_url;
-
-  const sdUrl = progressiveFormats.find(f => f.qualityLabel === '360p' || f.qualityLabel === '480p')?.url 
-    || progressiveFormats[progressiveFormats.length - 1]?.url 
-    || videoDetails.video_url;
-
-  const audioUrl = audioFormats[0]?.url || videoDetails.video_url;
-
-  // Format durasi (detik ke format MM:SS)
-  const seconds = Number(videoDetails.lengthSeconds) || 0;
-  const durationFormatted = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+  const details = info.videoDetails;
+  const progressive = ytdl.filterFormats(info.formats, "videoandaudio");
+  const audio = ytdl.filterFormats(info.formats, "audioonly");
+  const seconds = Number(details.lengthSeconds) || 0;
 
   return {
-    title: videoDetails.title || 'Video YouTube',
-    thumbnail: videoDetails.thumbnails?.[videoDetails.thumbnails.length - 1]?.url || '',
-    duration: durationFormatted,
-    views: Number(videoDetails.viewCount) || 0,
-    likes: Number(videoDetails.likes) || 0,
-    channelName: videoDetails.author?.name || 'Unknown Channel',
-    description: videoDetails.description || '',
+    title: details.title || "Video YouTube",
+    thumbnail: details.thumbnails?.at(-1)?.url || "",
+    duration: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`,
+    views: Number(details.viewCount) || 0,
+    likes: Number(details.likes) || 0,
+    channelName: details.author?.name || "Unknown Channel",
+    description: details.description || "",
     downloadLinks: {
-      hd: hdUrl,      // Sekarang berisi link video HD langsung
-      sd: sdUrl,      // Sekarang berisi link video SD langsung
-      audio: audioUrl,  // Sekarang berisi link audio langsung
+      hd: progressive.find((format) => format.qualityLabel === "720p")?.url || progressive[0]?.url || null,
+      sd: progressive.find((format) => format.qualityLabel === "480p" || format.qualityLabel === "360p")?.url || null,
+      audio: audio[0]?.url || null,
     },
   };
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
+  let body: unknown;
   try {
-    const { url } = await request.json();
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ success: false, error: "Body request harus berupa JSON yang valid." }, { status: 400 });
+  }
 
-    if (!url) {
-      return NextResponse.json({ error: 'URL tidak ditemukan' }, { status: 400 });
-    }
+  const input = body && typeof body === "object" && "url" in body
+    ? (body as { url?: unknown }).url
+    : null;
 
-    const videoData = await extractYoutubeData(url);
-    return NextResponse.json({ success: true, data: videoData });
+  if (!validatePlatformUrl(input, "youtube")) {
+    return NextResponse.json({ success: false, error: "URL YouTube tidak valid atau host tidak didukung." }, { status: 400 });
+  }
 
-  } catch (error: any) {
-    console.error('YouTube API POST Error:', error);
-    return NextResponse.json(
-      { error: error.message || 'Terjadi kesalahan pada server' },
-      { status: 500 }
-    );
+  try {
+    return NextResponse.json({ success: true, data: await extractYoutubeData(input) });
+  } catch (error) {
+    console.error("YouTube metadata error:", error);
+    return NextResponse.json({ success: false, error: "Gagal mengambil metadata YouTube. Coba lagi atau periksa URL video." }, { status: 502 });
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
+  const input = new URL(request.url).searchParams.get("url");
+  if (!validatePlatformUrl(input, "youtube")) {
+    return NextResponse.json({ success: false, error: "Parameter URL YouTube tidak valid." }, { status: 400 });
+  }
+
   try {
-    const url = request.nextUrl.searchParams.get('url');
-
-    if (!url) {
-      return NextResponse.json({ error: 'Parameter URL diperlukan' }, { status: 400 });
-    }
-
-    const videoData = await extractYoutubeData(url);
-    return NextResponse.json({ success: true, data: videoData });
-
-  } catch (error: any) {
-    console.error('YouTube API GET Error:', error);
-    return NextResponse.json(
-      { error: error.message || 'Terjadi kesalahan pada server' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, data: await extractYoutubeData(input) });
+  } catch (error) {
+    console.error("YouTube metadata error:", error);
+    return NextResponse.json({ success: false, error: "Gagal mengambil metadata YouTube. Coba lagi atau periksa URL video." }, { status: 502 });
   }
 }
