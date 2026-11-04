@@ -12,14 +12,15 @@ export default function Footer() {
       { name: "Cara Pakai", href: "#howto" },
     ],
     company: [
-      { name: "Tentang Kami", href: "#" },
-      { name: "Kontak", href: "#" },
+      { name: "Tentang Kami", href: "/about" },
+      { name: "Kontak", href: "/contact" },
       { name: "Support / Donasi", href: "/support" },
     ],
     legal: [
-      { name: "Kebijakan Privasi", href: "#" },
-      { name: "Syarat & Ketentuan", href: "#" },
-      { name: "Cookie Policy", href: "#" },
+      { name: "Pusat Legal", href: "/legal" },
+      { name: "Kebijakan Privasi", href: "/privacy" },
+      { name: "Syarat & Ketentuan", href: "/terms" },
+      { name: "Cookie Policy", href: "/cookies" },
     ],
   };
 
