@@ -271,7 +271,7 @@ export default function FacebookPage() {
                 HD Quality
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Download video Facebook dalam kualitas HD 1080p dan 720p.
+                Unduh video Facebook publik dalam kualitas yang tersedia.
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
@@ -279,10 +279,10 @@ export default function FacebookPage() {
                 <FaCheckCircle className="w-6 h-6 text-indigo-600" />
               </div>
               <h3 className="font-semibold text-gray-800 dark:text-white mb-2">
-                Tanpa Watermark
+                Format Media
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Download video tanpa watermark atau logo apapun.
+                Unduh file media yang disediakan sumber.
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
@@ -290,10 +290,10 @@ export default function FacebookPage() {
                 <FaShare className="w-6 h-6 text-purple-600" />
               </div>
               <h3 className="font-semibold text-gray-800 dark:text-white mb-2">
-                Support Semua
+                Konten Publik
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Support video Facebook, live streaming, dan video dari group.
+                Mendukung tautan video publik yang dapat diproses oleh layanan media.
               </p>
             </div>
           </div>
