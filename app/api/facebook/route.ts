@@ -4,6 +4,7 @@ import { callMediaService } from "@/lib/media-service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 export async function POST(request: Request) {
   const input = await readPlatformUrl(request, "facebook");
