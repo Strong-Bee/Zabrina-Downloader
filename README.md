@@ -1,251 +1,78 @@
-# 🎬 Zabrina Downloader
+# Zabrina Downloader
 
-<div align="center">
+Aplikasi Next.js untuk mengambil metadata dan menyiapkan tautan unduhan media dari URL publik yang didukung.
 
-![Zabrina Downloader](https://img.shields.io/badge/Zabrina-Downloader-8B5CF6?style=for-the-badge&logo=next.js&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-15.0.0-000000?style=flat-square&logo=next.js&logoColor=white)
-![React](https://img.shields.io/badge/React-18.3.0-61DAFB?style=flat-square&logo=react&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.0-06B6D4?style=flat-square&logo=tailwind-css&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-3178C6?style=flat-square&logo=typescript&logoColor=white)
+## Status platform
 
-**Download video dan audio dari YouTube, TikTok, Instagram, dan Facebook dengan mudah, cepat, dan gratis.**
+| Platform | Status API | Catatan |
+| --- | --- | --- |
+| YouTube | Eksperimental | Menggunakan `ytdl-core`; kompatibilitas dapat berubah mengikuti perubahan YouTube. |
+| TikTok | Eksperimental | Menggunakan `@mrnima/tiktok-downloader`; hanya URL publik yang didukung library. |
+| Instagram | Belum tersedia | Endpoint mengembalikan HTTP 501 sampai adapter resmi/tepercaya dikonfigurasi. |
+| Facebook | Belum tersedia | Endpoint mengembalikan HTTP 501 sampai adapter resmi/tepercaya dikonfigurasi. |
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-8B5CF6?style=for-the-badge&logo=vercel&logoColor=white)](#)
-[![Report Bug](https://img.shields.io/badge/Report_Bug-F97316?style=for-the-badge&logo=github&logoColor=white)](#)
-[![Request Feature](https://img.shields.io/badge/Request_Feature-10B981?style=for-the-badge&logo=github&logoColor=white)](#)
+Aplikasi tidak mengklaim metadata atau tautan unduhan palsu sebagai hasil nyata. Gunakan hanya untuk konten yang Anda miliki atau yang memang Anda berhak unduh, dan patuhi ketentuan layanan setiap platform.
 
-</div>
+## Teknologi
 
----
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- React Icons
 
-## 📋 Daftar Isi
+## Persyaratan
 
-- [✨ Fitur](#-fitur)
-- [📱 Platform yang Didukung](#-platform-yang-didukung)
-- [🚀 Teknologi](#-teknologi)
-- [📦 Instalasi](#-instalasi)
-- [💻 Penggunaan](#-penggunaan)
-- [📁 Struktur Proyek](#-struktur-proyek)
-- [🛠️ API Endpoints](#️-api-endpoints)
-- [🤝 Kontribusi](#-kontribusi)
-- [📄 Lisensi](#-lisensi)
+- Node.js 22 atau versi LTS yang kompatibel
+- npm
 
----
-
-## ✨ Fitur
-
-- ✅ **Multi Platform** - Download dari YouTube, TikTok, Instagram, dan Facebook
-- 🎥 **Kualitas HD** - Support resolusi 1080p, 720p, dan 480p
-- 🎵 **Ekstrak Audio** - Download audio MP3 dari video
-- 🚫 **Tanpa Watermark** - Download video tanpa watermark (khusus TikTok)
-- ⚡ **Cepat & Gratis** - Proses download super cepat tanpa biaya
-- 🔒 **Aman** - 100% bebas virus dan malware
-- 🌓 **Dark Mode** - Mendukung tema gelap dan terang
-- 📱 **Responsive** - Tampilan optimal di semua perangkat
-
----
-
-## 📱 Platform yang Didukung
-
-| Platform  | Status | Fitur                      |
-| --------- | ------ | -------------------------- |
-| YouTube   | ✅     | Video HD, Audio MP3        |
-| TikTok    | ✅     | Tanpa Watermark, Audio MP3 |
-| Instagram | ✅     | Video, Foto, Reels         |
-| Facebook  | ✅     | Video HD & SD              |
-
----
-
-## 🚀 Teknologi
-
-- **[Next.js 15](https://nextjs.org/)** - React framework dengan SSR & SSG
-- **[React 18](https://reactjs.org/)** - Library UI
-- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
-- **[TypeScript](https://www.typescriptlang.org/)** - JavaScript dengan type safety
-- **[React Icons](https://react-icons.github.io/react-icons/)** - Icon library
-- **[ytdl-core](https://github.com/fent/node-ytdl-core)** - YouTube downloader
-- **[Turbopack](https://turbo.build/pack)** - Build tool (Next.js 15+)
-
----
-
-## 📦 Instalasi
-
-### Prasyarat
-
-- Node.js 18.17.0 atau lebih baru
-- npm, yarn, atau pnpm
-
-### Langkah-langkah
-
-1. **Clone repository**
+## Instalasi
 
 ```bash
-git clone https://github.com/yourusername/zabrina-downloader.git
-cd zabrina-downloader
+git clone https://github.com/Strong-Bee/Zabrina-Downloader.git
+cd Zabrina-Downloader
+npm ci
 ```
 
-2. **Install dependencies**
-
-```bash
-npm install
-# atau
-yarn install
-# atau
-pnpm install
-```
-
-3. **Jalankan development server**
+## Menjalankan aplikasi
 
 ```bash
 npm run dev
-# atau
-yarn dev
-# atau
-pnpm dev
 ```
 
-4. **Buka browser**
+Buka http://localhost:3000.
 
-Buka [http://localhost:3000](http://localhost:3000) untuk melihat hasilnya.
+## Pemeriksaan
 
----
-
-## 💻 Penggunaan
-
-1. **Pilih Platform** - Klik salah satu menu: YouTube, TikTok, Instagram, atau Facebook
-2. **Tempel URL** - Salin dan tempelkan URL video yang ingin di-download
-3. **Cari Video** - Klik tombol "Cari Video" untuk mendapatkan informasi video
-4. **Pilih Kualitas** - Pilih kualitas video atau audio yang diinginkan
-5. **Download** - Klik tombol download untuk mulai mengunduh
-
-### Contoh URL
-
-| Platform  | Contoh URL                                          |
-| --------- | --------------------------------------------------- |
-| YouTube   | `https://youtube.com/watch?v=xxxxxxxxxxx`           |
-| TikTok    | `https://www.tiktok.com/@username/video/1234567890` |
-| Instagram | `https://www.instagram.com/p/xxxxxxxxxx/`           |
-| Facebook  | `https://www.facebook.com/watch/?v=1234567890`      |
-
----
-
-## 📁 Struktur Proyek
-
-```
-zabrina-downloader/
-├── app/
-│   ├── api/
-│   │   ├── youtube/
-│   │   │   ├── route.ts
-│   │   │   └── download/
-│   │   │       └── route.ts
-│   │   ├── tiktok/
-│   │   │   ├── route.ts
-│   │   │   └── download/
-│   │   │       └── route.ts
-│   │   ├── instagram/
-│   │   │   ├── route.ts
-│   │   │   └── download/
-│   │   │       └── route.ts
-│   │   └── facebook/
-│   │       ├── route.ts
-│   │       └── download/
-│   │           └── route.ts
-│   ├── youtube/
-│   │   └── page.tsx
-│   ├── tiktok/
-│   │   └── page.tsx
-│   ├── instagram/
-│   │   └── page.tsx
-│   ├── facebook/
-│   │   └── page.tsx
-│   ├── page.tsx
-│   └── layout.tsx
-├── components/
-│   ├── Navbar.tsx
-│   └── Footer.tsx
-├── public/
-│   └── images/
-├── styles/
-│   └── globals.css
-├── package.json
-├── tsconfig.json
-├── tailwind.config.js
-├── next.config.js
-└── README.md
+```bash
+npm run lint
+npm run build
 ```
 
----
+## API
 
-## 🛠️ API Endpoints
+Semua endpoint menerima JSON melalui `POST`.
 
-### YouTube
+| Endpoint | Fungsi |
+| --- | --- |
+| `/api/youtube` | Mengambil metadata YouTube |
+| `/api/youtube/download` | Memilih format unduhan YouTube |
+| `/api/tiktok` | Mengambil metadata TikTok |
+| `/api/tiktok/download` | Menyiapkan tautan unduhan TikTok |
+| `/api/instagram` | Mengembalikan 501 sampai adapter tersedia |
+| `/api/instagram/download` | Mengembalikan 501 sampai adapter tersedia |
+| `/api/facebook` | Mengembalikan 501 sampai adapter tersedia |
+| `/api/facebook/download` | Mengembalikan 501 sampai adapter tersedia |
 
-| Method | Endpoint                | Deskripsi                                  |
-| ------ | ----------------------- | ------------------------------------------ |
-| POST   | `/api/youtube`          | Mendapatkan informasi video                |
-| POST   | `/api/youtube/download` | Mendownload video dengan kualitas tertentu |
+Setiap endpoint memvalidasi host URL terhadap platform yang sesuai. URL ke host lain, protokol selain HTTP(S), kredensial URL, port khusus, dan input terlalu panjang ditolak.
 
-### TikTok
+## Catatan operasional
 
-| Method | Endpoint               | Deskripsi                      |
-| ------ | ---------------------- | ------------------------------ |
-| POST   | `/api/tiktok`          | Mendapatkan informasi video    |
-| POST   | `/api/tiktok/download` | Mendownload video/audio TikTok |
+- Jalankan aplikasi di lingkungan Node.js; route downloader menggunakan dependensi Node.
+- Pasang rate limiting di reverse proxy atau platform hosting sebelum membuka API ke publik.
+- Jangan menambahkan cookie, token akun, atau kredensial platform ke repository.
+- Downloader pihak ketiga dapat berhenti bekerja ketika platform sumber mengubah API atau mekanisme aksesnya.
 
-### Instagram
+## Lisensi
 
-| Method | Endpoint                  | Deskripsi                   |
-| ------ | ------------------------- | --------------------------- |
-| POST   | `/api/instagram`          | Mendapatkan informasi media |
-| POST   | `/api/instagram/download` | Mendownload media Instagram |
-
-### Facebook
-
-| Method | Endpoint                 | Deskripsi                   |
-| ------ | ------------------------ | --------------------------- |
-| POST   | `/api/facebook`          | Mendapatkan informasi video |
-| POST   | `/api/facebook/download` | Mendownload video Facebook  |
-
----
-
-## 🤝 Kontribusi
-
-Kontribusi selalu diterima! Berikut cara untuk berkontribusi:
-
-1. **Fork** repository ini
-2. **Buat branch** fitur baru (`git checkout -b feature/AmazingFeature`)
-3. **Commit** perubahan Anda (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** ke branch (`git push origin feature/AmazingFeature`)
-5. **Buat Pull Request**
-
-### Panduan Kontribusi
-
-- Gunakan TypeScript untuk semua kode baru
-- Ikuti style guide yang sudah ada
-- Tambahkan komentar untuk kode yang kompleks
-- Update README.md jika diperlukan
-- Pastikan semua test berjalan dengan baik
-
----
-
-## 📄 Lisensi
-
-Proyek ini dilisensikan di bawah Lisensi MIT - lihat file [LICENSE](LICENSE) untuk detail.
-
----
-
-## 👏 Kredit
-
-- Dibangun dengan [Next.js](https://nextjs.org/)
-- Ikon oleh [React Icons](https://react-icons.github.io/react-icons/)
-- Font oleh [Geist](https://vercel.com/font)
-
----
-
-<div align="center">
-
-**Dibuat dengan ❤️ oleh [Zabrina Team](https://github.com/yourusername)**
-
-</div>
-```
+Periksa file lisensi repository sebelum penggunaan atau distribusi.
