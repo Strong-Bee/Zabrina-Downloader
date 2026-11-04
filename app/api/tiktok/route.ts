@@ -1,65 +1,51 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createRequire } from 'module';
+import { NextResponse } from "next/server";
+import { createRequire } from "node:module";
+import { readPlatformUrl } from "@/lib/platform-url";
 
-// Trik bypass Turbopack: Memuat library menggunakan createRequire Node.js
+export const runtime = "nodejs";
+
 const require = createRequire(import.meta.url);
-const { tiktokdl } = require('@mrnima/tiktok-downloader');
+const { tiktokdl } = require("@mrnima/tiktok-downloader") as {
+  tiktokdl: (url: string) => Promise<any>;
+};
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
+  const input = await readPlatformUrl(request, "tiktok");
+  if ("error" in input) {
+    return NextResponse.json({ success: false, error: input.error }, { status: 400 });
+  }
+
   try {
-    const { url } = await request.json();
-
-    if (!url) {
-      return NextResponse.json(
-        { error: 'URL tidak ditemukan' },
-        { status: 400 }
-      );
+    const response = await tiktokdl(input.url);
+    if (!response?.status || !response?.result) {
+      return NextResponse.json({ success: false, error: "Video TikTok tidak ditemukan atau tidak dapat diakses secara publik." }, { status: 404 });
     }
 
-    // Mengambil data menggunakan library @mrnima/tiktok-downloader
-    const result = await tiktokdl(url);
-
-    // Validasi jika library gagal mengambil data
-    if (!result || !result.status || !result.result) {
-      return NextResponse.json(
-        { error: 'Gagal mengambil data video. Pastikan URL TikTok valid dan publik.' },
-        { status: 400 }
-      );
-    }
-
-    const tiktokData = result.result;
-
-    // Memetakan (mapping) hasil dari library ke format yang dibutuhkan frontend kamu
-    const formattedData = {
-      title: tiktokData.title || 'Video TikTok',
-      description: tiktokData.title || 'Video dari TikTok',
-      thumbnail: tiktokData.cover || 'https://picsum.photos/400/600',
-      duration: tiktokData.duration || 0,
-      views: tiktokData.play_count || 0,
-      likes: tiktokData.digg_count || 0,
-      comments: tiktokData.comment_count || 0,
-      author: {
-        username: tiktokData.author?.unique_id || 'username_tiktok',
-        nickname: tiktokData.author?.nickname || 'User TikTok',
-        avatar: tiktokData.author?.avatar || 'https://picsum.photos/40',
-      },
-      downloadLinks: {
-        videoNoWatermark: tiktokData.nowm || '#', // Video tanpa watermark
-        video: tiktokData.wm || '#',             // Video dengan watermark
-        audio: tiktokData.music || '#',          // Audio MP3
-      },
-    };
-
+    const data = response.result;
     return NextResponse.json({
       success: true,
-      data: formattedData,
+      data: {
+        title: data.title || "Video TikTok",
+        description: data.title || "Video dari TikTok",
+        thumbnail: data.cover || "",
+        duration: Number(data.duration) || 0,
+        views: Number(data.play_count) || 0,
+        likes: Number(data.digg_count) || 0,
+        comments: Number(data.comment_count) || 0,
+        author: {
+          username: data.author?.unique_id || "",
+          nickname: data.author?.nickname || "TikTok user",
+          avatar: data.author?.avatar || "",
+        },
+        downloadLinks: {
+          videoNoWatermark: data.nowm || null,
+          video: data.wm || null,
+          audio: data.music || null,
+        },
+      },
     });
-
-  } catch (error: any) {
-    console.error('TikTok Library Error:', error);
-    return NextResponse.json(
-      { error: error.message || 'Terjadi kesalahan pada server' },
-      { status: 500 }
-    );
+  } catch (error) {
+    console.error("TikTok metadata error:", error);
+    return NextResponse.json({ success: false, error: "Gagal mengambil metadata TikTok. Coba lagi." }, { status: 502 });
   }
 }
