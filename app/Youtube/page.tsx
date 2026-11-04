@@ -31,7 +31,7 @@ export default function YoutubePage() {
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState<string | null>(null);
   // Validasi URL YouTube (Ditambahkan dukungan untuk YouTube Shorts)
-  const validateYoutubeUrl = (url) => {
+  const validateYoutubeUrl = (url: string) => {
     const patterns = [
       /(?:youtube\.com\/watch\?v=)([\w-]+)/,
       /(?:youtu\.be\/)([\w-]+)/,
@@ -103,7 +103,7 @@ export default function YoutubePage() {
     }
   };
 
-  const handleDownload = async (quality, label) => {
+  const handleDownload = async (quality: string, label: string) => {
     if (!videoInfo) return;
 
     setDownloading(quality);
